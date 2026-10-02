@@ -39,7 +39,7 @@ export function calcularDistanciaHaversine(lat1: number, lon1: number, lat2: num
 
 export function obtenerTokenDenue(): string | null {
   try {
-    return localStorage.getItem('INEGI_DENUE_TOKEN') || null;
+    return localStorage.getItem('INEGI_DENUE_TOKEN') || '39518023-869c-4571-84a3-6a731a853a48';
   } catch {
     return null;
   }
