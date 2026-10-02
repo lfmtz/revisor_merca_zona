@@ -221,15 +221,11 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({
       mapInstanceRef.current = map;
 
       // Invalidate size to guarantee tiles load immediately without gray/black areas
-      setTimeout(() => {
-        try { map.invalidateSize(); } catch {}
-      }, 100);
-      setTimeout(() => {
-        try { map.invalidateSize(); } catch {}
-      }, 350);
-      setTimeout(() => {
-        try { map.invalidateSize(); } catch {}
-      }, 700);
+      [100, 300, 600, 1000, 1500, 2500].forEach(ms => {
+        setTimeout(() => {
+          try { map.invalidateSize({ animate: false }); } catch {}
+        }, ms);
+      });
 
       // ResizeObserver to keep tiles rendered on container resize
       if (typeof ResizeObserver !== 'undefined') {
@@ -589,8 +585,8 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({
       </div>
 
       {/* Leaflet Map Div */}
-      <div className="flex-1 w-full min-h-[380px] relative">
-        <div ref={mapContainerRef} className="w-full h-full min-h-[380px]" />
+      <div className="flex-1 w-full relative" style={{ minHeight: '380px' }}>
+        <div ref={mapContainerRef} style={{ width: '100%', height: '100%', minHeight: '380px', position: 'absolute', top: 0, left: 0 }} />
       </div>
 
       {/* Footer Legend Bar */}
