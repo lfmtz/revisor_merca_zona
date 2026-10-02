@@ -59,6 +59,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   // MEJORA 1: 2 Categorías simultáneas
   const [cat1, setCat1] = useState<string>(categoria || '');
   const [cat2, setCat2] = useState<string>('');
+  const [maxResultados, setMaxResultados] = useState<number>(100);
   
   const [activeTab, setActiveTab] = useState<'email' | 'visita'>('email');
   const [loading, setLoading] = useState<boolean>(false);
@@ -94,7 +95,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
 
     setLoading(true);
     try {
-      const res = await extraerConApify(c1, c2, municipio, estado, baseLat, baseLon);
+      const res = await extraerConApify(c1, c2, municipio, estado, baseLat, baseLon, maxResultados);
       setResultado(res);
 
       // MEJORA 2: Actualizar acumulado de créditos usados en el mes
@@ -190,7 +191,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                 <span className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono">
                   compass/crawler-google-places
                 </span>
-                <span className="text-xs text-gray-400">• maxCrawledPlaces: 300</span>
+                <span className="text-xs text-gray-400">• maxCrawledPlaces: {maxResultados}</span>
               </div>
               <h3 className="font-extrabold text-base sm:text-lg text-white">
                 Extracción Masiva con Apify — <span className="text-[#C084FC]">{ubicacion}</span>
@@ -297,6 +298,37 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
             <p className="text-[11px] text-[#E9D5FF]/70">
               💡 <b>Texto de ayuda:</b> Opcional — combina dos búsquedas en una sola extracción. Si dejas vacía la Categoría 2, solo buscará la Categoría 1. Los resultados se deduplican automáticamente por nombre y dirección.
             </p>
+
+            {/* LÍMITE DE RESULTADOS */}
+            <div className="border-t border-purple-900/40 pt-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#E9D5FF]">
+                  🎯 Límite de resultados por categoría:
+                </label>
+                <span className="text-sm font-extrabold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2.5 py-0.5 rounded-lg">
+                  {maxResultados} negocios
+                </span>
+              </div>
+              <input
+                type="range"
+                min={20}
+                max={500}
+                step={20}
+                value={maxResultados}
+                onChange={(e) => setMaxResultados(Number(e.target.value))}
+                className="w-full accent-purple-500 cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-gray-500">
+                <span>20 (rápido)</span>
+                <span>100</span>
+                <span>200</span>
+                <span>300</span>
+                <span>500 (completo)</span>
+              </div>
+              <p className="text-[10px] text-gray-400">
+                Más resultados = más tiempo y más costo Apify. Para prospección inicial usa 50–100. Para extracción completa usa 300–500.
+              </p>
+            </div>
           </div>
 
           {/* ESTADO DE CARGA */}

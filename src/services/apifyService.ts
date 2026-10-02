@@ -52,7 +52,8 @@ export async function extraerConApify(
   municipio: string = '',
   estado: string = '',
   baseLat?: number,
-  baseLon?: number
+  baseLon?: number,
+  maxResultados: number = 300
 ): Promise<ApifyExtractionResult> {
   const token = obtenerApifyToken();
   const zonaStr = municipio && municipio.trim() ? `${municipio.trim()}, ${estado}` : estado;
@@ -68,7 +69,7 @@ export async function extraerConApify(
   const payload = {
     searchStringsArray: searchStrings,
     locationQuery: locationQuery,
-    maxCrawledPlacesPerSearch: 300,
+    maxCrawledPlacesPerSearch: maxResultados,
     scrapeContacts: true,
     language: "es"
   };
