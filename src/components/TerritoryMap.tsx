@@ -201,9 +201,8 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({
         zoom: zoom,
         zoomControl: true,
         attributionControl: false,
-        scrollWheelZoom: true,
-        wheelDebounceTime: 100,
-        wheelPxPerZoomLevel: 120
+        scrollWheelZoom: false,
+        doubleClickZoom: false
       });
 
       // CartoDB Positron: Altamente confiable, rápido, sin restricciones de iframe/referrer y alto contraste
