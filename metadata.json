@@ -1,0 +1,6 @@
+{
+  "name": "LeadScrapper MX",
+  "description": "Herramienta especializada en prospección comercial, análisis de mercado territorial y extracción de negocios en Google Maps para equipos de ventas en México.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

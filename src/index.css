@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  body {
+    background-color: #1E1B2E;
+    color: #FFFFFF;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom lead card & metric card styles requested */
+.metric-card {
+  background: #2D2540;
+  border: 1px solid #6B21A8;
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.category-row {
+  background: #2D2540;
+  border-left: 4px solid #9333EA;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  margin: 0.3rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.category-row:hover {
+  border-left-color: #C084FC;
+  background: #362c4c;
+}
+
+.lead-card {
+  background: #2D2540;
+  border-left: 4px solid #9333EA;
+  border-radius: 8px;
+  padding: 1.2rem;
+  margin: 0.5rem 0;
+  transition: all 0.2s ease-in-out;
+}
+
+.lead-card:hover {
+  border-left-color: #C084FC;
+  box-shadow: 0 6px 20px rgba(107, 33, 168, 0.25);
+  transform: translateY(-2px);
+}
+
+.geo-badge {
+  background: #2D2540;
+  border: 1px solid #C084FC;
+  border-radius: 20px;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+  color: #C084FC;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.2rem;
+  font-weight: 500;
+}
+
+.empresa-badge {
+  background: #1e3a5f;
+  border: 1px solid #3b82f6;
+  border-radius: 12px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  color: #93c5fd;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.negocio-badge {
+  background: #1a3a2a;
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  color: #86efac;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.step-indicator {
+  background: #2D2540;
+  border: 2px solid #6B21A8;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #C084FC;
+  margin-right: 8px;
+  font-size: 0.85rem;
+  transition: all 0.25s ease;
+}
+
+.step-active {
+  background: #6B21A8;
+  border-color: #C084FC;
+  color: #FFFFFF;
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.4);
+}
+
+.step-completed {
+  background: #22C55E;
+  border-color: #22C55E;
+  color: #FFFFFF;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1E1B2E;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6B21A8;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9333EA;
+}
