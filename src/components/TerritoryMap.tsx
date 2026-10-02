@@ -188,7 +188,7 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({
     if (onModeChange) onModeChange(newMode);
   };
 
-  const [tileProvider, setTileProvider] = useState<'cartodb' | 'osm'>('cartodb');
+  const [tileProvider, setTileProvider] = useState<'cartodb' | 'osm'>('osm');
   const tileLayerRef = useRef<L.TileLayer | null>(null);
 
   useEffect(() => {
