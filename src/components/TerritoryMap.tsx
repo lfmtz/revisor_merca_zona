@@ -200,7 +200,10 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({
         center: [centerLat, centerLng],
         zoom: zoom,
         zoomControl: true,
-        attributionControl: false
+        attributionControl: false,
+        scrollWheelZoom: true,
+        wheelDebounceTime: 100,
+        wheelPxPerZoomLevel: 120
       });
 
       // CartoDB Positron: Altamente confiable, rápido, sin restricciones de iframe/referrer y alto contraste
@@ -286,67 +289,22 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({
       const baseLatLng = L.latLng(baseLocation.lat, baseLocation.lng);
       bounds.extend(baseLatLng);
 
-      // Estrella dorada ⭐
-      const baseIcon = L.divIcon({
-        className: 'custom-base-pin',
-        html: `
-          <div style="
-            background: linear-gradient(135deg, #F59E0B, #D97706);
-            color: #FFFFFF;
-            font-size: 16px;
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2.5px solid #FEF08A;
-            box-shadow: 0 0 16px rgba(245, 158, 11, 0.85);
-            cursor: pointer;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-          ">
-            ⭐
-          </div>
-        `,
-        iconSize: [34, 34],
-        iconAnchor: [17, 17]
+      // Círculo de zona de trabajo (sin pin estrella)
+      const opCircle = L.circle(baseLatLng, {
+        radius: baseLocation.radioKm * 1000,
+        color: '#9333EA',
+        weight: 2.5,
+        fillColor: '#9333EA',
+        fillOpacity: 0.08,
+        dashArray: '8, 6'
       });
-
-      const baseMarker = L.marker(baseLatLng, { icon: baseIcon, zIndexOffset: 1000 });
-      baseMarker.bindPopup(`
-        <div style="font-family: 'Poppins', sans-serif; color: #1E1B2E; padding: 4px; min-width: 190px;">
-          <div style="display: flex; align-items: center; gap: 4px; font-weight: 800; font-size: 13px; color: #D97706;">
-            <span>⭐</span>
-            <span>Tu Base de Operaciones</span>
-          </div>
-          <div style="font-size: 12px; font-weight: 600; color: #1F2937; margin-top: 3px;">
-            ${baseLocation.nombre}
-          </div>
-          <div style="font-size: 11px; color: #7C3AED; font-weight: 700; margin-top: 3px;">
-            Radio de cobertura: ${baseLocation.radioKm} km
-          </div>
+      opCircle.bindPopup(`
+        <div style="font-family: 'Poppins', sans-serif; color: #1E1B2E; padding: 4px;">
+          <div style="font-weight: 700; color: #6B21A8;">🎯 Zona de Trabajo: ${baseLocation.nombre}</div>
+          <div style="font-size: 11px;">Radio: <b>${baseLocation.radioKm} km</b> a la redonda</div>
         </div>
       `);
-      baseMarker.addTo(markersLayerRef.current);
-
-      // In Modo 1 (Cuadrículas), also show the coverage circle
-      if (internalMode === 'cuadriculas') {
-        const opCircle = L.circle(baseLatLng, {
-          radius: baseLocation.radioKm * 1000,
-          color: '#9333EA',
-          weight: 2,
-          fillColor: '#9333EA',
-          fillOpacity: 0.10,
-          dashArray: '6, 6'
-        });
-        opCircle.bindPopup(`
-          <div style="font-family: 'Poppins', sans-serif; color: #1E1B2E; padding: 4px;">
-            <div style="font-weight: 700; color: #6B21A8;">🎯 Cobertura Total</div>
-            <div style="font-size: 11px;">Radio: <b>${baseLocation.radioKm} km</b> a la redonda</div>
-          </div>
-        `);
-        opCircle.addTo(markersLayerRef.current);
-      }
+      opCircle.addTo(markersLayerRef.current);
     }
 
     // ─────────────────────────────────────────────────────────────
