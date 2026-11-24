@@ -28,6 +28,7 @@ export interface ApifyExtractionResult {
   conEmail: ApifyPlaceItem[];
   sinEmail: ApifyPlaceItem[];
   costoEstaExtraccion: number; // MEJORA 2: Costo en USD
+  descartadosOtroMunicipio: number; // Negocios que Google devolvió de municipios vecinos
   origenModo: 'apify_live';
   tiempoSegundos: number;
 }
@@ -101,7 +102,11 @@ export async function extraerConApify(
   baseLat: number = BASE_TRABAJO.lat,
   baseLon: number = BASE_TRABAJO.lon,
   maxResultados: number = 100,
-  opciones: { correos?: boolean; onProgreso?: (estado: string, segundos: number) => void } = {}
+  opciones: {
+    correos?: boolean;
+    soloMunicipio?: boolean;
+    onProgreso?: (estado: string, segundos: number) => void;
+  } = {}
 ): Promise<ApifyExtractionResult> {
   const zonaStr = municipio && municipio.trim() ? `${municipio.trim()}, ${estado}` : estado;
   const busquedas = [cat1.trim()];
@@ -138,7 +143,13 @@ export async function extraerConApify(
     break;
   }
 
-  // 3) Normalizar y deduplicar
+  // 3) Normalizar, filtrar por municipio y deduplicar
+  const soloMunicipio = (opciones.soloMunicipio ?? true) && !!municipio.trim();
+  const munNorm = normalizarTexto(municipio);
+  // "ecatepec de morelos" también acepta "ecatepec"; "naucalpan de juarez" → "naucalpan"
+  const munCorto = munNorm.split(' de ')[0];
+  const nombresMunicipio = munCorto.length >= 6 && munCorto !== munNorm ? [munNorm, munCorto] : [munNorm];
+  let descartadosOtroMunicipio = 0;
   const vistos = new Set<string>();
   const parsedItems: ApifyPlaceItem[] = [];
 
@@ -148,6 +159,13 @@ export async function extraerConApify(
     if (!nombre) continue;
     const dir = (item.address || [item.street, item.neighborhood, item.postalCode, item.city, item.state]
       .filter(Boolean).join(', ') || 'Sin dirección').trim();
+    if (soloMunicipio) {
+      const textoUbicacion = normalizarTexto(`${item.city || ''} ${item.address || ''}`);
+      if (!nombresMunicipio.some(n => textoUbicacion.includes(n))) {
+        descartadosOtroMunicipio++;
+        continue;
+      }
+    }
     const clave = item.placeId || `${nombre.toLowerCase()}|${dir.toLowerCase()}`;
     if (vistos.has(clave)) continue;
     vistos.add(clave);
@@ -200,6 +218,7 @@ export async function extraerConApify(
     sinEmail,
     costoEstaExtraccion: costoReal !== null ? Number(costoReal.toFixed(2)) : calcularCostoApify(total, correos),
     origenModo: 'apify_live',
+    descartadosOtroMunicipio,
     tiempoSegundos: Math.max(1, Math.round((Date.now() - startTime) / 1000))
   };
 }
@@ -214,6 +233,13 @@ function calcularDistanciaHaversine(lat1: number, lon1: number, lat2: number, lo
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return Number((R * c).toFixed(1));
+}
+
+/** Minúsculas, sin acentos ni signos: "Cdad. Nezahualcóyotl" → "cdad nezahualcoyotl". */
+function normalizarTexto(t: string): string {
+  return (t || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function extraerColonia(direccion: string): string {

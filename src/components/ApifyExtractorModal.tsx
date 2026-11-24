@@ -70,6 +70,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [progreso, setProgreso] = useState<string>('');
   const [buscarCorreos, setBuscarCorreos] = useState<boolean>(true);
+  const [soloMunicipio, setSoloMunicipio] = useState<boolean>(true);
   const [tokenConfigurado, setTokenConfigurado] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -107,6 +108,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
     try {
       const res = await extraerConApify(c1, c2, municipio, estado, baseLat, baseLon, maxResultados, {
         correos: buscarCorreos,
+        soloMunicipio,
         onProgreso: (st, seg) => setProgreso(
           st === 'SUCCEEDED' ? 'Descargando resultados...' : `Apify trabajando (${st}) · ${Math.floor(seg / 60)}:${String(seg % 60).padStart(2, '0')} min`
         ),
@@ -351,6 +353,17 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                 />
                 Buscar correos en los sitios web (más lento, ~USD 6 en vez de ~USD 4 por cada 1,000)
               </label>
+              {municipio && (
+                <label className="flex items-center gap-2 text-xs text-[#E9D5FF] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={soloMunicipio}
+                    onChange={(e) => setSoloMunicipio(e.target.checked)}
+                    className="accent-purple-500"
+                  />
+                  Solo negocios dentro de {municipio} (quitar los de municipios vecinos)
+                </label>
+              )}
               <p className="text-[11px] text-amber-300">
                 💰 Costo máximo aprox.: USD {(maxResultados * (cat2.trim() ? 2 : 1) * (buscarCorreos ? 0.006 : 0.004)).toFixed(2)}
                 {' · '}📌 Distancias y rutas desde: {BASE_TRABAJO.direccion}
@@ -372,6 +385,14 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                 {progreso && <p className="text-xs text-[#C084FC] font-mono pt-1">{progreso}</p>}
                 <p className="text-[10px] text-gray-500">Suele tardar de 1 a 5 minutos. No cierres esta ventana.</p>
               </div>
+            </div>
+          )}
+
+          {/* AVISO DE FILTRO POR MUNICIPIO */}
+          {!loading && resultado && resultado.descartadosOtroMunicipio > 0 && (
+            <div className="text-xs text-[#E9D5FF] bg-[#181030] border border-purple-800/60 rounded-xl px-4 py-2.5">
+              📍 Se quitaron <b>{resultado.descartadosOtroMunicipio}</b> negocios que Google Maps devolvió de municipios vecinos
+              (fuera de {municipio}). Desmarca "Solo negocios dentro de {municipio}" si también los quieres.
             </div>
           )}
 
