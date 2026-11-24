@@ -8,7 +8,7 @@
 // Obligatorio: APP_ACCESS_KEY en Vercel; cada llamada manda el header x-access-key
 // con ese valor (evita que extraños gasten tu saldo de Apify).
 
-import { claveValida } from './_auth';
+import { claveValida } from './_auth.js';
 
 const API = 'https://api.apify.com/v2';
 const ACTOR = 'compass~crawler-google-places';

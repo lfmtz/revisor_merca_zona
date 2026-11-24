@@ -1,5 +1,5 @@
 // GET /api/acceso → 200 si la clave (header x-access-key) es correcta.
-import { claveValida } from './_auth';
+import { claveValida } from './_auth.js';
 
 export default function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store');

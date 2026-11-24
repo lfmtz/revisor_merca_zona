@@ -7,11 +7,11 @@
 // de puntos para el mapa y los negocios más relevantes para el directorio.
 // Los cuadrados no se traslapan, así que sumar celdas no duplica negocios.
 
-import { claveValida } from './_auth';
+import { claveValida } from './_auth.js';
 import {
   clasificarGiro, esEstablecimientoGrande, normalizarTexto,
   indicadoresVacios, IndicadoresZona,
-} from '../src/utils/nse';
+} from '../src/utils/nse.js';
 
 const DENUE = 'https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar/todos';
 // Token público de la API del DENUE. Se puede cambiar con INEGI_TOKEN en Vercel.
