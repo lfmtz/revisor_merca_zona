@@ -1,3 +1,5 @@
+import { llamarApi } from './apiCliente';
+
 // apifyService.ts
 // Servicio para interactuar con el actor compass/crawler-google-places de Apify
 // Soporta 2 categorías simultáneas, deduplicación, contador de costo, y exportaciones para SenderPlus y Ruta de Visitas.
@@ -42,31 +44,6 @@ export const BASE_TRABAJO = {
   lat: 19.4037044,
   lon: -99.069271,
 };
-
-const ACCESS_KEY_STORAGE = 'leadscrapper_access_key';
-
-function headersApi(): Record<string, string> {
-  const h: Record<string, string> = { 'Content-Type': 'application/json' };
-  try {
-    const k = localStorage.getItem(ACCESS_KEY_STORAGE);
-    if (k) h['x-access-key'] = k;
-  } catch { /* sin localStorage */ }
-  return h;
-}
-
-async function llamarApi(url: string, init: RequestInit = {}, reintento = true): Promise<any> {
-  const r = await fetch(url, { ...init, headers: { ...headersApi(), ...(init.headers || {}) } });
-  const data = await r.json().catch(() => ({}));
-  if (r.status === 401 && data?.requiereClave && reintento) {
-    const clave = window.prompt('Escribe la clave de acceso de la app:');
-    if (clave) {
-      try { localStorage.setItem(ACCESS_KEY_STORAGE, clave.trim()); } catch { /* */ }
-      return llamarApi(url, init, false);
-    }
-  }
-  if (!r.ok) throw new Error(data?.error || `Error ${r.status} al llamar al servidor.`);
-  return data;
-}
 
 /** Pregunta al servidor si APIFY_TOKEN está configurado en Vercel (el token nunca llega aquí). */
 export async function verificarApifyConfigurado(): Promise<boolean> {

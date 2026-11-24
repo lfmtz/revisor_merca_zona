@@ -48,6 +48,8 @@ import {
   copyPhoneListToClipboard 
 } from './utils/dataProcessor';
 import { ESTADOS_MEXICO, ESTADOS_DATA } from './data/mexico_geo';
+import { escanearZonaDenue, ResultadoNse } from './services/denueScan';
+import { NseZonaPanel } from './components/NseZonaPanel';
 import { 
   MapPin, 
   Play, 
@@ -128,7 +130,8 @@ export default function App() {
   // Results State
   const [zoneResult, setZoneResult] = useState<ZoneAnalysisResult | null>(null);
   const [leadsList, setLeadsList] = useState<Lead[]>([]);
-  const [activeResultsTab, setActiveResultsTab] = useState<'categorias' | 'mapa' | 'leads' | 'inteligencia' | 'exportar'>('categorias');
+  const [nseResult, setNseResult] = useState<ResultadoNse | null>(null);
+  const [activeResultsTab, setActiveResultsTab] = useState<'categorias' | 'nse' | 'mapa' | 'leads' | 'inteligencia' | 'exportar'>('categorias');
   const [categorySearch, setCategorySearch] = useState<string>('');
   const [leadsSearch, setLeadsSearch] = useState<string>('');
   const [leadsViewMode, setLeadsViewMode] = useState<'tabla' | 'tarjetas'>('tabla');
@@ -215,12 +218,11 @@ export default function App() {
     addLog(`Modo: ${gridMode.toUpperCase()} (${calculatedCells.length} celdas) | Radio: ${radioKm} km`, 'info');
 
     try {
-      const result = await scanTerritoryWithGrid(
+      const real = await escanearZonaDenue(
         estado,
         municipio,
         radioKm,
         gridMode,
-        settings,
         (progress) => {
           setScanProgress(progress);
         },
@@ -230,59 +232,16 @@ export default function App() {
         stopRef.current
       );
 
-      setZoneResult(result);
-      
-      // Generate realistic leads directory for these categories (180 registros)
-      const allLeads: Lead[] = [];
-      const NOMBRES_MARCAS = [
-        "San José", "El Águila", "Los Primos", "García e Hijos", "La Esperanza",
-        "Don Beto", "San Francisco", "El Fénix", "Hermanos Morales", "La Fe",
-        "Azteca", "San Martín", "El Trébol", "La Moderna", "Doña Tere",
-        "La Central", "San Rafael", "El Sol", "González Hermanos", "Alfa & Omega",
-        "La Guadalupana", "Metropolitano", "Imperial", "San Antonio", "La Corona"
-      ];
-
-      result.categorias.slice(0, 15).forEach((catSummary, idx) => {
-        const catLeadsCount = Math.min(catSummary.cantidad, 12);
-        for (let j = 0; j < catLeadsCount; j++) {
-          const pt = result.densidad_puntos[idx % result.densidad_puntos.length];
-          const dir = `Av. Principal #${100 + j * 12}, Col. Centro, C.P. 08000, ${municipio || estado}, México`;
-          
-          // Generar nombre de negocio auténtico con marca/nombre comercial
-          const marca = NOMBRES_MARCAS[(idx * 7 + j) % NOMBRES_MARCAS.length];
-          
-          // Simular 2 registros con nombre vacío para verificar que el indicador rojo "⚠️ Sin nombre" funcione visiblemente
-          const isSimulatedMissing = (idx === 0 && j === 5) || (idx === 2 && j === 8);
-          const nombreNegocio = isSimulatedMissing ? "" : `${catSummary.categoria} "${marca}"`;
-
-          allLeads.push({
-            id: `lead_${idx}_${j}_${Date.now()}`,
-            nombre_negocio: nombreNegocio,
-            categoria: catSummary.categoria,
-            tipo_entidad: catSummary.tipo_entidad,
-            direccion_completa: dir,
-            municipio_detectado: municipio || estado,
-            estado_detectado: estado,
-            telefono: `+52 55 ${5000 + idx * 100 + j * 10} ${1000 + j * 45}`,
-            url_google_maps: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((nombreNegocio || catSummary.categoria) + ' ' + (municipio || estado))}`,
-            sitio_web: j % 2 === 0 ? `https://www.${catSummary.categoria.toLowerCase().replace(/[^a-z0-9]/g, '')}-mx.com` : 'N/A',
-            calificacion: Number((4.0 + (j % 10) * 0.1).toFixed(1)),
-            num_resenas: 25 + j * 18,
-            horario: 'Lun a Sáb 09:00 - 19:00',
-            estado_apertura: 'Abierto ahora',
-            link_navegacion: (pt?.lat && pt?.lng) ? `https://www.google.com/maps/dir/?api=1&destination=${pt.lat},${pt.lng}` : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dir)}`,
-            fecha_extraccion: new Date().toISOString().split('T')[0],
-            cobertura_busqueda: municipio ? `${municipio}, ${estado}` : estado,
-            lat: pt?.lat,
-            lng: pt?.lng
-          });
-        }
-      });
-      setLeadsList(allLeads);
+      setZoneResult(real.zona);
+      setNseResult(real.nse);
+      setLeadsList(real.leads);
+      if (real.zona.total_negocios === 0) {
+        addLog('⚠️ No se encontraron negocios. Revisa que el municipio esté bien escrito.', 'warning');
+      }
 
       setIsScanning(false);
       setCurrentScreen('results');
-      setActiveResultsTab('mapa');
+      setActiveResultsTab('nse');
     } catch (err: any) {
       addLog(`❌ Error en escaneo: ${err.message}`, 'error');
       setIsScanning(false);
@@ -312,6 +271,7 @@ export default function App() {
   const handleNewScan = () => {
     setCurrentScreen('config');
     setZoneResult(null);
+    setNseResult(null);
     setLogs([]);
   };
 
@@ -1055,6 +1015,18 @@ export default function App() {
               </button>
 
               <button
+                id="tab-btn-nse"
+                onClick={() => setActiveResultsTab('nse')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition whitespace-nowrap ${
+                  activeResultsTab === 'nse'
+                    ? 'bg-gradient-to-r from-[#6B21A8] to-[#9333EA] text-white shadow-lg shadow-purple-950/50'
+                    : 'bg-[#140E24] text-[#E9D5FF] hover:bg-[#1E1438]'
+                }`}
+              >
+                <span>💰 Nivel Socioeconómico {nseResult ? `(${nseResult.nivel.nivel})` : ''}</span>
+              </button>
+
+              <button
                 id="tab-btn-mapa"
                 onClick={() => setActiveResultsTab('mapa')}
                 className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition whitespace-nowrap ${
@@ -1110,6 +1082,15 @@ export default function App() {
             {/* ───────────────────────────────────────────────────────────── */}
             {/* SUB-VIEW 1: TABLA DE CATEGORÍAS REALES CON BOTÓN QUERY APIFY   */}
             {/* ───────────────────────────────────────────────────────────── */}
+            {activeResultsTab === 'nse' && nseResult && (
+              <NseZonaPanel nse={nseResult} zona={zoneResult.coverage} />
+            )}
+            {activeResultsTab === 'nse' && !nseResult && (
+              <div className="bg-[#140E24] border border-purple-900/40 rounded-2xl p-6 text-sm text-gray-300">
+                Haz un escaneo nuevo para calcular el nivel socioeconómico de la zona.
+              </div>
+            )}
+
             {activeResultsTab === 'categorias' && (
               <div id="view-categorias-table" className="space-y-4">
                 
@@ -1138,8 +1119,8 @@ export default function App() {
                       <thead>
                         <tr className="bg-[#1C1433] border-b border-[#6B21A8]/40 text-[#C084FC] uppercase tracking-wider font-bold">
                           <th className="py-3.5 px-4 w-12 text-center">#</th>
-                          <th className="py-3.5 px-4">Categoría Real de Google Maps</th>
-                          <th className="py-3.5 px-4 text-right">En Muestra</th>
+                          <th className="py-3.5 px-4">Giro (DENUE INEGI)</th>
+                          <th className="py-3.5 px-4 text-right">Negocios</th>
                           <th className="py-3.5 px-4 text-right">% del Total</th>
                           <th className="py-3.5 px-4 text-right">Est. Real Apify</th>
                           <th className="py-3.5 px-4 text-right">Costo Apify (USD)</th>

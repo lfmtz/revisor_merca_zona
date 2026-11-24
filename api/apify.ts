@@ -5,8 +5,10 @@
 //   POST /api/apify  {busquedas, ubicacion, maxResultados, correos}  → { runId }
 //   GET  /api/apify?runId=XXX       → { status, items? }
 //
-// Opcional: si defines APP_ACCESS_KEY en Vercel, cada llamada debe mandar el header
-// x-access-key con ese valor (evita que extraños gasten tu saldo de Apify).
+// Obligatorio: APP_ACCESS_KEY en Vercel; cada llamada manda el header x-access-key
+// con ese valor (evita que extraños gasten tu saldo de Apify).
+
+import { claveValida } from './_auth';
 
 const API = 'https://api.apify.com/v2';
 const ACTOR = 'compass~crawler-google-places';
@@ -56,9 +58,9 @@ export default async function handler(req: Req, res: Res) {
   res.setHeader('Cache-Control', 'no-store');
   const token = (process.env.APIFY_TOKEN || '').trim();
 
-  const accessKey = (process.env.APP_ACCESS_KEY || '').trim();
-  if (accessKey && req.headers['x-access-key'] !== accessKey) {
-    return res.status(401).json({ error: 'Clave de acceso incorrecta.', requiereClave: true });
+  const acceso = claveValida(req);
+  if (!acceso.ok) {
+    return res.status(acceso.status).json({ error: acceso.error, requiereClave: acceso.requiereClave });
   }
 
   try {

@@ -1,3 +1,4 @@
+import { centroMunicipio } from '../data/municipios_centro';
 import { GridMode, GridModeConfig, GridEstimation, GridCell, CategorySummary, EntityType } from '../types';
 import { ESTADOS_MEXICO, ESTADOS_DATA } from '../data/mexico_geo';
 
@@ -99,6 +100,8 @@ export function geocodificarZona(estado: string, municipio: string = ''): { lat:
   const estadoGeo = ESTADOS_GEO[estado] || { lat: 19.4326, lon: -99.1332, radio_km: 50 };
 
   if (municipio && municipio.trim()) {
+    const conocido = centroMunicipio(municipio);
+    if (conocido) return { ...conocido };
     const radio_mun = estimarRadioMunicipio(municipio);
     // Coordenadas con ligeros offsets naturales si es municipio conocido
     if (estadoData && estadoData.lat && estadoData.lng) {
