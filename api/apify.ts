@@ -4,6 +4,7 @@
 //   GET  /api/apify                 → { configurado: boolean }
 //   POST /api/apify  {busquedas, ubicacion, maxResultados, correos}  → { runId }
 //   GET  /api/apify?runId=XXX       → { status, items? }
+//   GET  /api/apify?saldo=1         → { limiteUsd, usadoUsd, disponibleUsd, finCiclo }
 //
 // Obligatorio: APP_ACCESS_KEY en Vercel; cada llamada manda el header x-access-key
 // con ese valor (evita que extraños gasten tu saldo de Apify).
@@ -64,11 +65,25 @@ export default async function handler(req: Req, res: Res) {
   }
 
   try {
-    if (req.method === 'GET' && !req.query.runId) {
+    if (req.method === 'GET' && !req.query.runId && !req.query.saldo) {
       return res.status(200).json({ configurado: !!token });
     }
     if (!token) {
       return res.status(500).json({ error: 'Falta APIFY_TOKEN en las variables de entorno de Vercel.' });
+    }
+
+    // ── Saldo del mes en Apify ──────────────────────────────
+    if (req.method === 'GET' && req.query.saldo) {
+      const d = (await apify('/users/me/limits', token))?.data || {};
+      const limite = Number(d.limits?.maxMonthlyUsageUsd ?? 0);
+      const usado = Number(d.current?.monthlyUsageUsd ?? 0);
+      return res.status(200).json({
+        limiteUsd: Number(limite.toFixed(2)),
+        usadoUsd: Number(usado.toFixed(2)),
+        disponibleUsd: Number(Math.max(0, limite - usado).toFixed(2)),
+        inicioCiclo: d.monthlyUsageCycle?.startAt || null,
+        finCiclo: d.monthlyUsageCycle?.endAt || null,
+      });
     }
 
     // ── Iniciar una extracción ──────────────────────────────

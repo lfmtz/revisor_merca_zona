@@ -45,6 +45,24 @@ export const BASE_TRABAJO = {
   lon: -99.069271,
 };
 
+export interface SaldoApify {
+  limiteUsd: number;
+  usadoUsd: number;
+  disponibleUsd: number;
+  inicioCiclo: string | null;
+  finCiclo: string | null;
+}
+
+/** Saldo real del mes en la cuenta de Apify (lo consulta el servidor con el token). */
+export async function obtenerSaldoApify(): Promise<SaldoApify> {
+  return llamarApi('/api/apify?saldo=1');
+}
+
+/** Avisa a los indicadores de saldo que deben actualizarse (p. ej. tras una extracción). */
+export function avisarSaldoCambiado() {
+  window.dispatchEvent(new Event('leadscrapper:saldo-actualizar'));
+}
+
 /** Pregunta al servidor si APIFY_TOKEN está configurado en Vercel (el token nunca llega aquí). */
 export async function verificarApifyConfigurado(): Promise<boolean> {
   try {

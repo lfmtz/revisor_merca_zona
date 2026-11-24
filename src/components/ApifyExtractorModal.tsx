@@ -31,6 +31,9 @@ import {
   ApifyExtractionResult, 
   ApifyPlaceItem,
   verificarApifyConfigurado,
+  obtenerSaldoApify,
+  avisarSaldoCambiado,
+  SaldoApify,
   BASE_TRABAJO
 } from '../services/apifyService';
 import { TerritoryMap } from './TerritoryMap';
@@ -45,8 +48,6 @@ interface ApifyExtractorModalProps {
   baseLon?: number;
 }
 
-const STORAGE_KEY_APIFY_GASTO = 'leadscrapper_apify_gasto_mes';
-const CREDITO_MENSUAL_GRATIS = 5.00;
 
 export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   isOpen,
@@ -77,15 +78,14 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
     if (isOpen) verificarApifyConfigurado().then(setTokenConfigurado);
   }, [isOpen]);
 
-  // MEJORA 2: Contador de costos acumulado en sesión/mes
-  const [creditosUsadosMes, setCreditosUsadosMes] = useState<number>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY_APIFY_GASTO);
-      return stored ? parseFloat(stored) : 0.00;
-    } catch {
-      return 0.00;
-    }
-  });
+  // Saldo REAL del mes en Apify
+  const [saldo, setSaldo] = useState<SaldoApify | null>(null);
+  const refrescarSaldo = () => obtenerSaldoApify().then(setSaldo).catch(() => setSaldo(null));
+  useEffect(() => {
+    if (isOpen) refrescarSaldo();
+  }, [isOpen]);
+  const costoMaximo = Number((maxResultados * (cat2.trim() ? 2 : 1) * (buscarCorreos ? 0.006 : 0.004)).toFixed(2));
+  const saldoInsuficiente = !!saldo && costoMaximo > saldo.disponibleUsd;
 
   const ubicacion = municipio ? `${municipio}, ${estado}` : estado;
 
@@ -101,6 +101,10 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
     const c2 = (c2ToRun !== undefined ? c2ToRun : cat2).trim();
 
     if (!c1) return;
+    if (saldoInsuficiente && !window.confirm(
+      `Esta extracción puede costar hasta USD ${costoMaximo.toFixed(2)} y te quedan USD ${saldo!.disponibleUsd.toFixed(2)} este mes.\n` +
+      `Apify se detendrá al llegar al límite y podrías recibir menos resultados. ¿Continuar?`
+    )) return;
 
     setLoading(true);
     setErrorMsg(null);
@@ -115,15 +119,9 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
       });
       setResultado(res);
 
-      // MEJORA 2: Actualizar acumulado de créditos usados en el mes
-      const costo = res.costoEstaExtraccion;
-      const nuevoTotal = Number((creditosUsadosMes + costo).toFixed(2));
-      setCreditosUsadosMes(nuevoTotal);
-      try {
-        localStorage.setItem(STORAGE_KEY_APIFY_GASTO, nuevoTotal.toString());
-      } catch (e) {
-        console.warn("No se pudo guardar en localStorage:", e);
-      }
+      // Actualizar saldo real (aquí y en el indicador de la barra superior)
+      refrescarSaldo();
+      avisarSaldoCambiado();
 
       // Si no hay con email, mostrar visitas
       if (res.conEmail.length === 0 && res.sinEmail.length > 0) {
@@ -157,7 +155,6 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   const conEmailPct = totalRegistros > 0 ? Math.round((conEmailCount / totalRegistros) * 100) : 0;
   const sinEmailPct = totalRegistros > 0 ? Math.round((sinEmailCount / totalRegistros) * 100) : 0;
   const costoEstaExtraccion = resultado?.costoEstaExtraccion || 0;
-  const creditosDisponibles = Math.max(0, Number((CREDITO_MENSUAL_GRATIS - creditosUsadosMes).toFixed(2)));
 
   const cleanZone = (municipio || estado).toLowerCase().replace(/[^a-z0-9]/g, '_');
   const cleanCat = (cat1 + (cat2 ? `_${cat2}` : '')).toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -365,9 +362,16 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                 </label>
               )}
               <p className="text-[11px] text-amber-300">
-                💰 Costo máximo aprox.: USD {(maxResultados * (cat2.trim() ? 2 : 1) * (buscarCorreos ? 0.006 : 0.004)).toFixed(2)}
+                💰 Costo máximo aprox.: USD {costoMaximo.toFixed(2)}
+                {saldo && <> · Saldo disponible: <b>USD {saldo.disponibleUsd.toFixed(2)}</b></>}
                 {' · '}📌 Distancias y rutas desde: {BASE_TRABAJO.direccion}
               </p>
+              {saldoInsuficiente && (
+                <p className="text-[11px] text-red-300 font-bold">
+                  ⚠️ No te alcanza el saldo para esta extracción completa. Baja el número de negocios
+                  o desactiva la búsqueda de correos.
+                </p>
+              )}
             </div>
           </div>
 
@@ -460,17 +464,23 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
 
                 <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-purple-900/40 text-xs text-gray-300">
                   <div className="flex items-center gap-4">
-                    <span>
-                      Créditos usados este mes: <b className="text-white font-mono">${creditosUsadosMes.toFixed(2)} USD</b>
-                    </span>
-                    <span>•</span>
-                    <span>
-                      Créditos disponibles: <b className="text-emerald-400 font-mono">${creditosDisponibles.toFixed(2)} USD</b>
-                      <span className="text-gray-400 text-[11px]"> (de $5.00 USD mensuales gratuitos)</span>
-                    </span>
+                    {saldo ? (
+                      <>
+                        <span>
+                          Usado este mes: <b className="text-white font-mono">${saldo.usadoUsd.toFixed(2)} USD</b>
+                        </span>
+                        <span>•</span>
+                        <span>
+                          Disponible: <b className="text-emerald-400 font-mono">${saldo.disponibleUsd.toFixed(2)} USD</b>
+                          <span className="text-gray-400 text-[11px]"> (de ${saldo.limiteUsd.toFixed(2)} USD del mes · saldo real de Apify)</span>
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-gray-400">Consultando saldo en Apify...</span>
+                    )}
                   </div>
 
-                  {creditosDisponibles < 1.00 && (
+                  {saldo && saldo.disponibleUsd < 1.00 && (
                     <div className="flex items-center gap-1.5 text-amber-400 font-bold bg-amber-950/60 border border-amber-800/80 px-2.5 py-1 rounded-lg">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
                       <span>⚠️ Te quedan menos de $1 USD de crédito este mes. Úsalo con cuidado.</span>

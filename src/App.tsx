@@ -50,6 +50,7 @@ import {
 import { ESTADOS_MEXICO, ESTADOS_DATA } from './data/mexico_geo';
 import { escanearZonaDenue, ResultadoNse } from './services/denueScan';
 import { NseZonaPanel } from './components/NseZonaPanel';
+import { SaldoApifyBadge } from './components/SaldoApifyBadge';
 import { 
   MapPin, 
   Play, 
@@ -342,6 +343,7 @@ export default function App() {
 
         {/* Action Controls */}
         <div className="flex items-center gap-2.5">
+          <SaldoApifyBadge />
           <button
             id="btn-open-stealth-logs"
             onClick={() => setIsLogViewerOpen(true)}
