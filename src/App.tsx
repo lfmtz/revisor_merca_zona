@@ -1625,8 +1625,6 @@ export default function App() {
           categoria={selectedExtractCat}
           municipio={municipio}
           estado={estado}
-          baseLat={geoCenter.lat}
-          baseLon={geoCenter.lon}
         />
       )}
 

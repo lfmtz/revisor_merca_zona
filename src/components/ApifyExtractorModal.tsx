@@ -30,7 +30,8 @@ import {
   descargarCsvRutaVisitas,
   ApifyExtractionResult, 
   ApifyPlaceItem,
-  obtenerApifyToken
+  verificarApifyConfigurado,
+  BASE_TRABAJO
 } from '../services/apifyService';
 import { TerritoryMap } from './TerritoryMap';
 
@@ -53,8 +54,8 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   categoria,
   municipio,
   estado,
-  baseLat = 19.4326,
-  baseLon = -99.1332
+  baseLat = BASE_TRABAJO.lat,
+  baseLon = BASE_TRABAJO.lon
 }) => {
   // MEJORA 1: 2 Categorías simultáneas
   const [cat1, setCat1] = useState<string>(categoria || '');
@@ -66,6 +67,14 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   const [resultado, setResultado] = useState<ApifyExtractionResult | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showMapModal, setShowMapModal] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [progreso, setProgreso] = useState<string>('');
+  const [buscarCorreos, setBuscarCorreos] = useState<boolean>(true);
+  const [tokenConfigurado, setTokenConfigurado] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (isOpen) verificarApifyConfigurado().then(setTokenConfigurado);
+  }, [isOpen]);
 
   // MEJORA 2: Contador de costos acumulado en sesión/mes
   const [creditosUsadosMes, setCreditosUsadosMes] = useState<number>(() => {
@@ -78,7 +87,6 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   });
 
   const ubicacion = municipio ? `${municipio}, ${estado}` : estado;
-  const tokenConfigurado = !!obtenerApifyToken();
 
   useEffect(() => {
     if (categoria) {
@@ -94,8 +102,15 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
     if (!c1) return;
 
     setLoading(true);
+    setErrorMsg(null);
+    setProgreso('Iniciando extracción en Apify...');
     try {
-      const res = await extraerConApify(c1, c2, municipio, estado, baseLat, baseLon, maxResultados);
+      const res = await extraerConApify(c1, c2, municipio, estado, baseLat, baseLon, maxResultados, {
+        correos: buscarCorreos,
+        onProgreso: (st, seg) => setProgreso(
+          st === 'SUCCEEDED' ? 'Descargando resultados...' : `Apify trabajando (${st}) · ${Math.floor(seg / 60)}:${String(seg % 60).padStart(2, '0')} min`
+        ),
+      });
       setResultado(res);
 
       // MEJORA 2: Actualizar acumulado de créditos usados en el mes
@@ -114,19 +129,16 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
       } else {
         setActiveTab('email');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error al extraer con Apify:", err);
+      setErrorMsg(err?.message || 'Error desconocido al extraer con Apify.');
     } finally {
       setLoading(false);
+      setProgreso('');
     }
   };
 
-  // Ejecutar automáticamente al abrir por primera vez si no hay resultado
-  useEffect(() => {
-    if (isOpen && categoria && !resultado && !loading) {
-      handleEjecutarExtraccion(categoria, '');
-    }
-  }, [isOpen, categoria]);
+  // Ya NO se ejecuta automáticamente al abrir: cada extracción cuesta saldo de Apify.
 
   if (!isOpen) return null;
 
@@ -157,17 +169,17 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
     direccion: it.direccion,
     municipio_detectado: municipio || '',
     estado_detectado: estado || '',
-    calificacion: it.calificacion || 4.5,
-    num_resenas: 10,
+    calificacion: it.calificacion || 0,
+    num_resenas: 0,
     horario: "Abierto",
     sitio_web: it.web,
-    lat: it.lat || baseLat + ((idx % 5) - 2) * 0.01,
-    lon: it.lon || baseLon + (((idx + 2) % 5) - 2) * 0.01,
+    lat: it.lat as number,
+    lon: it.lon as number,
     link_gps: it.link_gps,
     url_maps: it.url_maps,
     place_id: it.id,
     fuente_extraccion: 'apify'
-  }));
+  })).filter(l => typeof l.lat === 'number' && typeof l.lon === 'number');
 
   return (
     <div 
@@ -224,13 +236,15 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                 </span>
               </div>
               <div className="text-[11px] font-mono">
-                {tokenConfigurado ? (
+                {tokenConfigurado === null ? (
+                  <span className="text-gray-400">Verificando conexión con Apify...</span>
+                ) : tokenConfigurado ? (
                   <span className="text-emerald-400 flex items-center gap-1 font-bold">
-                    <CheckCircle className="w-3.5 h-3.5" /> APIFY_TOKEN activo en .env
+                    <CheckCircle className="w-3.5 h-3.5" /> Apify conectado (datos reales)
                   </span>
                 ) : (
-                  <span className="text-amber-400 flex items-center gap-1" title="Configura APIFY_TOKEN en .env para llamadas directas de producción">
-                    <AlertCircle className="w-3.5 h-3.5" /> Token no detectado (Modo calibrado)
+                  <span className="text-amber-400 flex items-center gap-1" title="Agrega APIFY_TOKEN en Vercel → Settings → Environments → Environment Variables">
+                    <AlertCircle className="w-3.5 h-3.5" /> Falta APIFY_TOKEN en Vercel
                   </span>
                 )}
               </div>
@@ -328,6 +342,19 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
               <p className="text-[10px] text-gray-400">
                 Más resultados = más tiempo y más costo Apify. Para prospección inicial usa 50–100. Para extracción completa usa 300–500.
               </p>
+              <label className="flex items-center gap-2 text-xs text-[#E9D5FF] pt-1 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={buscarCorreos}
+                  onChange={(e) => setBuscarCorreos(e.target.checked)}
+                  className="accent-purple-500"
+                />
+                Buscar correos en los sitios web (más lento, ~USD 6 en vez de ~USD 4 por cada 1,000)
+              </label>
+              <p className="text-[11px] text-amber-300">
+                💰 Costo máximo aprox.: USD {(maxResultados * (cat2.trim() ? 2 : 1) * (buscarCorreos ? 0.006 : 0.004)).toFixed(2)}
+                {' · '}📌 Distancias y rutas desde: {BASE_TRABAJO.direccion}
+              </p>
             </div>
           </div>
 
@@ -342,6 +369,19 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                 <p className="text-xs text-gray-400 max-w-lg">
                   Rastreando Google Places para: <span className="text-emerald-400 font-mono">"{cat1}"</span> {cat2 ? <span> y <span className="text-emerald-400 font-mono">"{cat2}"</span></span> : null} en {ubicacion}, extrayendo emails públicos, teléfonos y enlaces GPS.
                 </p>
+                {progreso && <p className="text-xs text-[#C084FC] font-mono pt-1">{progreso}</p>}
+                <p className="text-[10px] text-gray-500">Suele tardar de 1 a 5 minutos. No cierres esta ventana.</p>
+              </div>
+            </div>
+          )}
+
+          {/* ERROR */}
+          {!loading && errorMsg && (
+            <div className="flex items-start gap-3 bg-red-950/40 border border-red-700/60 rounded-2xl p-4 text-sm text-red-200">
+              <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-red-300">No se pudo completar la extracción</p>
+                <p className="text-xs mt-1">{errorMsg}</p>
               </div>
             </div>
           )}
@@ -361,7 +401,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                     </h4>
                   </div>
                   <span className="text-xs text-gray-400 font-mono">
-                    Tasa: $0.006 USD/lugar (scrapeContacts activo)
+                    Costo real reportado por Apify
                   </span>
                 </div>
 
@@ -646,7 +686,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                                   {item.colonia || 'Centro'}
                                 </td>
                                 <td className="py-2.5 px-3 font-mono font-bold text-amber-400 whitespace-nowrap">
-                                  {item.distancia_km || 0} km
+                                  {item.distancia_km ?? "—"} km
                                 </td>
                                 <td className="py-2.5 px-3 text-center">
                                   {/* MEJORA 4: Botón "🧭 Ir" con Link GPS */}

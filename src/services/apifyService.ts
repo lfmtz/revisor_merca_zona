@@ -28,22 +28,69 @@ export interface ApifyExtractionResult {
   conEmail: ApifyPlaceItem[];
   sinEmail: ApifyPlaceItem[];
   costoEstaExtraccion: number; // MEJORA 2: Costo en USD
-  origenModo: 'apify_live' | 'calibrado';
+  origenModo: 'apify_live';
   tiempoSegundos: number;
 }
 
-export function obtenerApifyToken(): string {
-  const token = (typeof process !== 'undefined' && process.env?.APIFY_TOKEN) 
-    || (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_APIFY_TOKEN)
-    || (typeof import.meta !== 'undefined' && (import.meta as any).env?.APIFY_TOKEN)
-    || '';
-  return token.trim();
+// ─────────────────────────────────────────────────────────────
+// PUNTO DE PARTIDA: ubicación física del trabajo (coordenadas de Google Maps)
+// ─────────────────────────────────────────────────────────────
+export const BASE_TRABAJO = {
+  nombre: 'Mi trabajo',
+  direccion: 'Calz. Ignacio Zaragoza 957-A, Agrícola Oriental, Iztacalco, 08500 CDMX',
+  lat: 19.4037044,
+  lon: -99.069271,
+};
+
+const ACCESS_KEY_STORAGE = 'leadscrapper_access_key';
+
+function headersApi(): Record<string, string> {
+  const h: Record<string, string> = { 'Content-Type': 'application/json' };
+  try {
+    const k = localStorage.getItem(ACCESS_KEY_STORAGE);
+    if (k) h['x-access-key'] = k;
+  } catch { /* sin localStorage */ }
+  return h;
+}
+
+async function llamarApi(url: string, init: RequestInit = {}, reintento = true): Promise<any> {
+  const r = await fetch(url, { ...init, headers: { ...headersApi(), ...(init.headers || {}) } });
+  const data = await r.json().catch(() => ({}));
+  if (r.status === 401 && data?.requiereClave && reintento) {
+    const clave = window.prompt('Escribe la clave de acceso de la app:');
+    if (clave) {
+      try { localStorage.setItem(ACCESS_KEY_STORAGE, clave.trim()); } catch { /* */ }
+      return llamarApi(url, init, false);
+    }
+  }
+  if (!r.ok) throw new Error(data?.error || `Error ${r.status} al llamar al servidor.`);
+  return data;
+}
+
+/** Pregunta al servidor si APIFY_TOKEN está configurado en Vercel (el token nunca llega aquí). */
+export async function verificarApifyConfigurado(): Promise<boolean> {
+  try {
+    const d = await llamarApi('/api/apify');
+    return !!d?.configurado;
+  } catch {
+    return false;
+  }
 }
 
 export function calcularCostoApify(totalRegistros: number, scrapeContacts: boolean = true): number {
-  // MEJORA 2: costo = registros * (0.004 + 0.002) = registros * 0.006
+  // Aprox.: USD 4 por 1,000 lugares; +USD 2 por 1,000 si se buscan correos en las webs.
   const tasa = scrapeContacts ? 0.006 : 0.004;
   return Number((totalRegistros * tasa).toFixed(2));
+}
+
+export function rutaDesdeTrabajo(lat?: number, lon?: number, placeId?: string, texto?: string): string {
+  const origen = `${BASE_TRABAJO.lat},${BASE_TRABAJO.lon}`;
+  if (lat !== undefined && lon !== undefined) {
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${origen}&destination=${lat},${lon}&travelmode=driving`;
+    if (placeId) url += `&destination_place_id=${encodeURIComponent(placeId)}`;
+    return url;
+  }
+  return `https://www.google.com/maps/dir/?api=1&origin=${origen}&destination=${encodeURIComponent(texto || '')}&travelmode=driving`;
 }
 
 export async function extraerConApify(
@@ -51,137 +98,98 @@ export async function extraerConApify(
   cat2: string = '',
   municipio: string = '',
   estado: string = '',
-  baseLat?: number,
-  baseLon?: number,
-  maxResultados: number = 300
+  baseLat: number = BASE_TRABAJO.lat,
+  baseLon: number = BASE_TRABAJO.lon,
+  maxResultados: number = 100,
+  opciones: { correos?: boolean; onProgreso?: (estado: string, segundos: number) => void } = {}
 ): Promise<ApifyExtractionResult> {
-  const token = obtenerApifyToken();
   const zonaStr = municipio && municipio.trim() ? `${municipio.trim()}, ${estado}` : estado;
-  
-  const searchStrings: string[] = [`${cat1.trim()} en ${municipio ? `${municipio} ` : ''}${estado} México`];
+  const busquedas = [cat1.trim()];
   if (cat2 && cat2.trim() && cat2.trim().toLowerCase() !== cat1.trim().toLowerCase()) {
-    searchStrings.push(`${cat2.trim()} en ${municipio ? `${municipio} ` : ''}${estado} México`);
+    busquedas.push(cat2.trim());
   }
-
-  const locationQuery = `${municipio ? `${municipio}, ` : ''}${estado}, México`;
-
-  // MEJORA 6: maxCrawledPlacesPerSearch a 300
-  const payload = {
-    searchStringsArray: searchStrings,
-    locationQuery: locationQuery,
-    maxCrawledPlacesPerSearch: maxResultados,
-    scrapeContacts: true,
-    language: "es"
-  };
-
+  const ubicacion = `${municipio ? `${municipio.trim()}, ` : ''}${estado}, México`;
+  const correos = opciones.correos ?? true;
   const startTime = Date.now();
+
+  // 1) Arrancar la extracción en el servidor
+  const inicio = await llamarApi('/api/apify', {
+    method: 'POST',
+    body: JSON.stringify({ busquedas, ubicacion, maxResultados, correos }),
+  });
+  const runId: string = inicio.runId;
+  if (!runId) throw new Error('Apify no devolvió el identificador de la extracción.');
+
+  // 2) Esperar a que termine (Apify suele tardar 1–5 min)
   let rawItems: any[] = [];
-  let origenModo: 'apify_live' | 'calibrado' = 'calibrado';
-
-  if (token) {
-    try {
-      const endpoint = `https://api.apify.com/v2/acts/compass~crawler-google-places/run-sync-get-dataset-items?token=${encodeURIComponent(token)}&timeout=150`;
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data) && data.length > 0) {
-          rawItems = data;
-          origenModo = 'apify_live';
-        }
-      }
-    } catch (err) {
-      console.warn("Llamada Apify API tuvo error, usando fallback calibrado:", err);
+  let costoReal: number | null = null;
+  const limiteMs = 20 * 60 * 1000;
+  for (;;) {
+    if (Date.now() - startTime > limiteMs) {
+      throw new Error('La extracción está tardando demasiado. Revísala en console.apify.com → Runs.');
     }
+    await new Promise(r => setTimeout(r, 5000));
+    const d = await llamarApi(`/api/apify?runId=${encodeURIComponent(runId)}`);
+    opciones.onProgreso?.(d.status, Math.round((Date.now() - startTime) / 1000));
+    if (d.status === 'READY' || d.status === 'RUNNING') continue;
+    if (d.status !== 'SUCCEEDED') throw new Error(d.error || `Apify terminó con estado ${d.status}.`);
+    rawItems = d.items || [];
+    costoReal = typeof d.costoUsd === 'number' ? d.costoUsd : null;
+    break;
   }
 
-  // Si no hay token o falló la llamada real, generar datos calibrados de alta fidelidad
-  if (rawItems.length === 0) {
-    await new Promise(r => setTimeout(r, 1200));
-    rawItems = generarMockPlacesDosCategorias(cat1, cat2, municipio, estado, baseLat, baseLon);
-    origenModo = 'calibrado';
-  }
-
-  // Deduplicar por nombre + dirección (MEJORA 1)
+  // 3) Normalizar y deduplicar
   const vistos = new Set<string>();
   const parsedItems: ApifyPlaceItem[] = [];
 
   for (let idx = 0; idx < rawItems.length; idx++) {
     const item = rawItems[idx];
-    const nombre = (item.title || item.name || `${cat1} #${idx + 1}`).trim();
-    const dir = (item.address || item.formattedAddress || `${zonaStr}, México`).trim();
-    const clave = `${nombre.toLowerCase()}|${dir.toLowerCase().slice(0, 30)}`;
-
+    const nombre = (item.title || '').trim();
+    if (!nombre) continue;
+    const dir = (item.address || [item.street, item.neighborhood, item.postalCode, item.city, item.state]
+      .filter(Boolean).join(', ') || 'Sin dirección').trim();
+    const clave = item.placeId || `${nombre.toLowerCase()}|${dir.toLowerCase()}`;
     if (vistos.has(clave)) continue;
     vistos.add(clave);
 
-    // Origen de búsqueda
     const itemSearchStr = (item.searchString || '').toLowerCase();
     let origen = cat1;
-    if (cat2 && cat2.trim() && itemSearchStr.includes(cat2.toLowerCase())) {
-      origen = cat2.trim();
-    } else if (item.origen_asignado) {
-      origen = item.origen_asignado;
-    }
+    if (cat2 && cat2.trim() && itemSearchStr.includes(cat2.trim().toLowerCase())) origen = cat2.trim();
 
-    // Coordenadas y Link GPS (MEJORA 4)
-    const lat = item.location?.lat || item.lat;
-    const lon = item.location?.lng || item.lng || item.lon;
-    const linkGps = (lat && lon)
-      ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`
-      : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dir || nombre)}`;
+    const lat: number | undefined = item.location?.lat ?? undefined;
+    const lon: number | undefined = item.location?.lng ?? undefined;
 
-    // Extraer email
     let email: string | null = null;
-    if (typeof item.email === 'string' && item.email.includes('@')) {
-      email = item.email.trim();
-    } else if (Array.isArray(item.emails) && item.emails.length > 0) {
-      email = item.emails[0];
-    } else if (item.contactInfo?.email) {
-      email = item.contactInfo.email;
-    }
+    if (Array.isArray(item.emails) && item.emails.length > 0) email = String(item.emails[0]).trim();
 
-    // Distancia desde base del usuario
-    let distanciaKm = 2.5;
-    if (baseLat && baseLon && lat && lon) {
-      distanciaKm = calcularDistanciaHaversine(baseLat, baseLon, lat, lon);
-    } else if (item.distancia_km) {
-      distanciaKm = item.distancia_km;
-    }
-
-    const colonia = item.neighborhood || item.colonia || extraerColonia(dir) || "Zona Comercial";
+    const distanciaKm = (lat !== undefined && lon !== undefined)
+      ? calcularDistanciaHaversine(baseLat, baseLon, lat, lon)
+      : undefined;
 
     parsedItems.push({
-      id: item.placeId || `apify_${idx}_${Date.now()}`,
+      id: item.placeId || `apify_${idx}`,
       nombre,
-      categoria: item.categoryName || item.categoria || origen,
+      categoria: item.categoryName || origen,
       origen,
-      telefono: item.phone || item.phoneUnformatted || item.telefono || "Sin teléfono",
-      email: email || null,
-      web: item.website || item.web || item.url || "",
+      telefono: item.phone || item.phoneUnformatted || 'Sin teléfono',
+      email,
+      web: item.website || '',
       direccion: dir,
-      colonia,
+      colonia: item.neighborhood || extraerColonia(dir) || '',
       distancia_km: distanciaKm,
-      calificacion: item.totalScore || item.rating || 4.5,
+      calificacion: typeof item.totalScore === 'number' ? item.totalScore : 0,
       lat,
       lon,
-      link_gps: linkGps,
+      link_gps: rutaDesdeTrabajo(lat, lon, item.placeId, `${nombre} ${dir}`),
       url_maps: item.url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nombre + ' ' + dir)}`
     });
   }
 
-  // Separación en dos grupos (MEJORA 3)
-  const conEmail = parsedItems.filter(p => !!p.email);
-  // Visitas en persona ordenadas por distancia desde la base del usuario (MEJORA 3)
-  const sinEmail = parsedItems.filter(p => !p.email).sort((a, b) => (a.distancia_km || 0) - (b.distancia_km || 0));
-
+  const porDistancia = (a: ApifyPlaceItem, b: ApifyPlaceItem) =>
+    (a.distancia_km ?? Infinity) - (b.distancia_km ?? Infinity);
+  const conEmail = parsedItems.filter(p => !!p.email).sort(porDistancia);
+  const sinEmail = parsedItems.filter(p => !p.email).sort(porDistancia);
   const total = parsedItems.length;
-  const costoEstaExtraccion = calcularCostoApify(total, true);
 
   return {
     categoria1: cat1,
@@ -190,8 +198,8 @@ export async function extraerConApify(
     total,
     conEmail,
     sinEmail,
-    costoEstaExtraccion,
-    origenModo,
+    costoEstaExtraccion: costoReal !== null ? Number(costoReal.toFixed(2)) : calcularCostoApify(total, correos),
+    origenModo: 'apify_live',
     tiempoSegundos: Math.max(1, Math.round((Date.now() - startTime) / 1000))
   };
 }
@@ -200,9 +208,9 @@ function calcularDistanciaHaversine(lat1: number, lon1: number, lat2: number, lo
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
+  const a =
     Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return Number((R * c).toFixed(1));
@@ -211,80 +219,6 @@ function calcularDistanciaHaversine(lat1: number, lon1: number, lat2: number, lo
 function extraerColonia(direccion: string): string {
   const match = direccion.match(/Col\.?\s+([^,]+)/i);
   return match ? match[1].trim() : '';
-}
-
-function generarMockPlacesDosCategorias(
-  cat1: string,
-  cat2: string,
-  municipio: string,
-  estado: string,
-  baseLat?: number,
-  baseLon?: number
-): any[] {
-  const ubicacion = municipio ? `${municipio}, ${estado}` : estado;
-  const categoriasABuscar = [cat1];
-  if (cat2 && cat2.trim() && cat2.trim().toLowerCase() !== cat1.trim().toLowerCase()) {
-    categoriasABuscar.push(cat2.trim());
-  }
-
-  const bLat = baseLat || 19.4326;
-  const bLon = baseLon || -99.1332;
-
-  const colonias = ["Del Valle", "Narvarte", "Centro", "Polanco", "Industrial", "Roma Norte", "Granjas México", "Portales", "Santa Fe", "Anáhuac"];
-  const dominios = ["com.mx", "mx", "com", "org.mx"];
-  const calles = [
-    "Av. Insurgentes Sur #1420", "Calz. Ignacio Zaragoza #890", "Av. Patriotismo #450", 
-    "Eje 4 Sur Plutarco Elías Calles #230", "Av. Gustavo Baz #120", "Blvd. Manuel Ávila Camacho #600",
-    "Av. Revolución #310", "Viaducto Río de la Piedad #400", "Av. Universidad #1050", "Calz. de Tlalpan #2100",
-    "Calle Durango #188", "Av. División del Norte #420", "Calz. Ermita Iztapalapa #310"
-  ];
-
-  const prefijos = ["Grupo", "Consorcio", "Distribuidora", "Servicios", "Comercializadora", "Soluciones", "Unidad", "Centro", "Especialistas"];
-  const sufijos = ["de México", "Metropolitano", "del Centro", "Nacional", "Express", "San José", "Azteca", "Integral"];
-
-  const items: any[] = [];
-
-  categoriasABuscar.forEach((cat, cIdx) => {
-    const cantidad = categoriasABuscar.length === 1 ? 18 : 12;
-    for (let i = 0; i < cantidad; i++) {
-      const p = prefijos[(i + cIdx) % prefijos.length];
-      const s = sufijos[(i * 2 + cIdx) % sufijos.length];
-      const nombre = `${p} ${cat} ${s}`;
-      const col = colonias[(i + cIdx * 2) % colonias.length];
-      const calle = calles[(i + cIdx * 3) % calles.length];
-      const direccion = `${calle}, Col. ${col}, ${ubicacion}, México`;
-
-      // ~36% con email
-      const tieneEmail = (i % 3 === 0) || (i === 1);
-      const cleanSlug = nombre.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
-      const dom = dominios[(i + cIdx) % dominios.length];
-      const email = tieneEmail ? `contacto@${cleanSlug}.${dom}` : null;
-      const web = tieneEmail ? `https://www.${cleanSlug}.${dom}` : "";
-      const phone = `55 ${5000 + i * 47 + cIdx * 19} ${1000 + i * 83}`;
-
-      const lat = bLat + ((i % 5) - 2) * 0.012 + (cIdx * 0.007);
-      const lon = bLon + (((i + 2) % 5) - 2) * 0.013 - (cIdx * 0.006);
-      const dist = calcularDistanciaHaversine(bLat, bLon, lat, lon);
-
-      items.push({
-        title: nombre,
-        categoryName: cat,
-        origen_asignado: cat,
-        searchString: `${cat} en ${ubicacion} México`,
-        phone,
-        email,
-        address: direccion,
-        colonia: col,
-        website: web,
-        lat,
-        lon,
-        distancia_km: dist,
-        totalScore: Number((4.1 + (i % 9) * 0.1).toFixed(1))
-      });
-    }
-  });
-
-  return items;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -327,7 +261,7 @@ export function descargarCsvRutaVisitas(items: ApifyPlaceItem[], filename: strin
     `"${(it.categoria || '').replace(/"/g, '""')}"`,
     `"${(it.telefono || '').replace(/"/g, '""')}"`,
     `"${(it.colonia || '').replace(/"/g, '""')}"`,
-    it.distancia_km || 0,
+    it.distancia_km ?? '',
     `"${it.link_gps}"`,
     `"${(it.origen || '').replace(/"/g, '""')}"`
   ]);

@@ -11,9 +11,8 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
-    define: {
-      'process.env.APIFY_TOKEN': JSON.stringify(process.env.APIFY_TOKEN || process.env.VITE_APIFY_TOKEN || '')
-    },
+    // IMPORTANTE: no inyectar APIFY_TOKEN aquí; quedaría público en el JS.
+    // El token solo se usa en la función serverless api/apify.ts.
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
