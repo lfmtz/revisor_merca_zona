@@ -56,6 +56,7 @@ export interface Lead {
   link_navegacion: string;
   fecha_extraccion: string;
   cobertura_busqueda: string;
+  colonia?: string;
   lat?: number;
   lng?: number;
 }

@@ -20,6 +20,9 @@ const DENUE = `${DENUE_BUSCAR}/todos`;
 const TOKEN_DENUE_DEFAULT = '39518023-869c-4571-84a3-6a731a853a48';
 const NEGOCIOS_POR_CELDA = 60;
 const PUNTOS_POR_CELDA = 250;
+// Tamaño (en grados) de los cuadritos del mapa de calor: ~275 m. Índices globales para
+// que las celdas del escaneo se puedan sumar sin traslaparse.
+export const PASO_DENSIDAD = 0.0025;
 
 async function consultarDenue(url: string): Promise<any[]> {
   const r = await fetch(url, { headers: { Accept: 'application/json' } });
@@ -142,6 +145,7 @@ export default async function handler(req: any, res: any) {
   const categorias: Record<string, [number, number]> = {};
   const colonias: Record<string, { ind: IndicadoresZona; lat: number; lon: number; cp: string }> = {};
   const puntos: [number, number, string][] = [];
+  const densidad: Record<string, [number, number, number]> = {}; // "i,j" → [total, alto, bajo]
   const candidatos: { s: number; n: any }[] = [];
   let conTelefono = 0;
 
@@ -175,7 +179,12 @@ export default async function handler(req: any, res: any) {
     sumar(col.ind, giro, grande, web);
     col.lat += la; col.lon += lo;
 
-    if (puntos.length < PUNTOS_POR_CELDA * 4) puntos.push([la, lo, clase]);
+    puntos.push([la, lo, clase]);
+    const dk = `${Math.floor(la / PASO_DENSIDAD)},${Math.floor(lo / PASO_DENSIDAD)}`;
+    const dv = densidad[dk] || (densidad[dk] = [0, 0, 0]);
+    dv[0]++;
+    if (giro === 'alto') dv[1]++;
+    if (giro === 'bajo') dv[2]++;
 
     const estr = rangoEstrato(x.Estrato || '');
     candidatos.push({
@@ -222,6 +231,8 @@ export default async function handler(req: any, res: any) {
     categorias,
     colonias,
     puntos: muestra,
+    densidad,
+    pasoDensidad: PASO_DENSIDAD,
     negocios,
   });
 }

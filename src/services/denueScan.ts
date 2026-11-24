@@ -22,11 +22,21 @@ export interface ColoniaNse {
   distancia_km: number;
 }
 
+export interface CeldaDensidad {
+  lat: number;   // esquina sur-oeste
+  lon: number;
+  paso: number;  // tamaño en grados
+  total: number;
+  alto: number;
+  bajo: number;
+}
+
 export interface ResultadoNse {
   indice: number | null;
   nivel: NivelNse;
   indicadores: IndicadoresZona;
   colonias: ColoniaNse[];
+  densidad: CeldaDensidad[];
 }
 
 export interface ResultadoEscaneoReal {
@@ -78,6 +88,8 @@ export async function escanearZonaDenue(
   let conTelefono = 0;
   const puntos: ZoneAnalysisResult['densidad_puntos'] = [];
   const negocios: any[] = [];
+  const densidad: Record<string, [number, number, number]> = {};
+  let pasoDensidad = 0.0025;
   let terminadas = 0;
   let celdasConError = 0;
   let ultimaCategoria = '';
@@ -120,6 +132,11 @@ export async function escanearZonaDenue(
         puntos.push({ lat: la, lng: lo, nombre: cat, categoria: cat, calificacion: 0 });
       }
       negocios.push(...(d.negocios || []));
+      if (d.pasoDensidad) pasoDensidad = d.pasoDensidad;
+      for (const [k, [t, a, b]] of Object.entries<[number, number, number]>(d.densidad || {})) {
+        const v = densidad[k] || (densidad[k] = [0, 0, 0]);
+        v[0] += t; v[1] += a; v[2] += b;
+      }
       if (d.total) log(`Celda ${i + 1}/${celdas.length}: ${d.total.toLocaleString('es-MX')} negocios`, 'success');
     }
     terminadas++;
@@ -174,7 +191,14 @@ export async function escanearZonaDenue(
     };
   }).sort((a, b) => b.total - a.total);
   const indiceZona = calcularIndiceNse(indicadores);
-  const nse: ResultadoNse = { indice: indiceZona, nivel: nivelDesdeIndice(indiceZona), indicadores, colonias: listaColonias };
+  const celdasDensidad: CeldaDensidad[] = Object.entries(densidad).map(([k, [t, a, b]]) => {
+    const [i, j] = k.split(',').map(Number);
+    return { lat: i * pasoDensidad, lon: j * pasoDensidad, paso: pasoDensidad, total: t, alto: a, bajo: b };
+  });
+  const nse: ResultadoNse = {
+    indice: indiceZona, nivel: nivelDesdeIndice(indiceZona), indicadores, colonias: listaColonias,
+    densidad: celdasDensidad,
+  };
 
   // ── Directorio de negocios reales ───────────────────────
   const hoy = new Date().toISOString().split('T')[0];
@@ -203,6 +227,7 @@ export async function escanearZonaDenue(
       link_navegacion: rutaDesdeTrabajo(n.lat, n.lon),
       fecha_extraccion: hoy,
       cobertura_busqueda: ubicacion,
+      colonia: titulo(n.colonia || ''),
       lat: n.lat,
       lng: n.lon,
     });

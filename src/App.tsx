@@ -51,6 +51,7 @@ import { ESTADOS_MEXICO, ESTADOS_DATA } from './data/mexico_geo';
 import { escanearZonaDenue, ResultadoNse } from './services/denueScan';
 import { NseZonaPanel } from './components/NseZonaPanel';
 import { SaldoApifyBadge } from './components/SaldoApifyBadge';
+import { MapaZona } from './components/MapaZona';
 import { 
   MapPin, 
   Play, 
@@ -1038,7 +1039,7 @@ export default function App() {
                 }`}
               >
                 <MapPin className="w-4 h-4" />
-                <span>🗺️ Mapa de Calor y Base</span>
+                <span>🗺️ Mapa de la Zona</span>
               </button>
 
               <button
@@ -1190,38 +1191,20 @@ export default function App() {
               <div id="view-mapa-territorial" className="space-y-4">
                 <div className="bg-[#140E24] border border-purple-900/40 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
                   
-                  {/* Mode 2 Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-purple-900/40">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-purple-900/40">
                     <div>
-                      <h3 className="text-base font-extrabold text-white flex items-center gap-2">
-                        <span>🗺️ MODO 2 — Mapa de Negocios Encontrados</span>
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono font-bold">
-                          {leadsList.length} pines georreferenciados
-                        </span>
-                      </h3>
+                      <h3 className="text-base font-extrabold text-white">🗺️ Mapa de la zona — {zoneResult.coverage}</h3>
                       <p className="text-xs text-[#E9D5FF]/70 mt-0.5">
-                        Un pin por cada negocio encontrado sin burbujas ni cuadrículas. Haz clic en cualquier pin para ver teléfono, copiar y navegar con el botón 🧭 Ir.
+                        Cambia entre colonias por nivel socioeconómico, mapa de calor de negocios y negocios agrupados.
+                        Toca cualquier círculo para ver detalles y la ruta desde tu trabajo.
                       </p>
                     </div>
-
-                    <div className="text-xs text-[#C084FC] font-semibold bg-purple-950/60 px-3 py-1.5 rounded-xl border border-purple-800/50 self-start sm:self-auto">
-                      ⭐ Base: {municipio ? `${municipio}, ` : ''}{estado}
-                    </div>
                   </div>
-
-                  {/* Leaflet Territory Map with Modo 2 default & optional reference toggle */}
-                  <div className="h-[540px] rounded-xl overflow-hidden border border-purple-900/50">
-                    <TerritoryMap
-                      centerLat={geoCenter.lat}
-                      centerLng={geoCenter.lon}
-                      zoom={radioKm <= 5 ? 14 : radioKm <= 12 ? 12 : 11}
-                      mode="negocios"
-                      showModeSwitch={true}
-                      baseLocation={baseLocation}
-                      gridCells={calculatedCells}
-                      leads={leadsList}
-                    />
-                  </div>
+                  {nseResult ? (
+                    <MapaZona nse={nseResult} leads={leadsList} centroLat={geoCenter.lat} centroLon={geoCenter.lon} />
+                  ) : (
+                    <p className="text-sm text-gray-300">Haz un escaneo nuevo para ver el mapa de la zona.</p>
+                  )}
                 </div>
               </div>
             )}
