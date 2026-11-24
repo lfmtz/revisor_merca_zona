@@ -1,6 +1,7 @@
 // Función serverless de Vercel: escaneo REAL de una celda de la cuadrícula con el DENUE (INEGI).
 //
 //   GET /api/denue?lat=..&lon=..&lado_km=..&municipio=..&estado=..
+//   GET /api/denue?termino=hospital&lat=..&lon=..&radio_m=..   → lista de negocios (búsqueda por palabra)
 //
 // Descarga todos los establecimientos de la celda (cuadrado de lado `lado_km`) y devuelve
 // un RESUMEN: conteo por giro, indicadores de nivel socioeconómico por colonia, una muestra
@@ -13,11 +14,45 @@ import {
   indicadoresVacios, IndicadoresZona,
 } from '../src/utils/nse.js';
 
-const DENUE = 'https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar/todos';
+const DENUE_BUSCAR = 'https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar';
+const DENUE = `${DENUE_BUSCAR}/todos`;
 // Token público de la API del DENUE. Se puede cambiar con INEGI_TOKEN en Vercel.
 const TOKEN_DENUE_DEFAULT = '39518023-869c-4571-84a3-6a731a853a48';
 const NEGOCIOS_POR_CELDA = 60;
 const PUNTOS_POR_CELDA = 250;
+
+async function consultarDenue(url: string): Promise<any[]> {
+  const r = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!r.ok) throw new Error(`El DENUE respondió ${r.status}.`);
+  // El DENUE a veces responde el arreglo como texto JSON "doble"; se aceptan ambos.
+  let parsed: unknown = JSON.parse((await r.text()).replace(/^\uFEFF/, '').trim() || '[]');
+  if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+  return Array.isArray(parsed) ? parsed : [];
+}
+
+const TIPOS_VIALIDAD = /^(avenida|av\.?|calle|calzada|calz\.?|boulevard|blvd\.?|privada|cerrada|andador|prolongacion|eje|circuito|retorno|callejon|carretera|camino|periferico|viaducto)\b/;
+
+/** "CALLE" + "AVENIDA SAN ANGEL" → "AVENIDA SAN ANGEL" (evita repetir el tipo de vialidad). */
+function nombreVialidad(x: any): string {
+  const calle = String(x.Calle || '').trim();
+  const tipo = String(x.Tipo_vialidad || '').trim();
+  if (!calle) return tipo;
+  if (!tipo || TIPOS_VIALIDAD.test(normalizarTexto(calle))) return calle;
+  return `${tipo} ${calle}`;
+}
+
+function direccionDenue(x: any): string {
+  const calle = [nombreVialidad(x), String(x.Num_Exterior || '').trim()]
+    .filter(Boolean).join(' ');
+  const interior = String(x.Num_Interior || '').trim();
+  const ubic = String(x.Ubicacion || '').replace(/\s+/g, ' ').replace(/ ,/g, ',').trim();
+  return [
+    calle + (interior ? ` int. ${interior}` : ''),
+    x.Colonia ? `Col. ${String(x.Colonia).trim()}` : '',
+    x.CP ? `C.P. ${String(x.CP).trim()}` : '',
+    ubic,
+  ].filter(Boolean).join(', ');
+}
 
 function num(v: unknown): number {
   const n = parseFloat(String(v ?? ''));
@@ -51,6 +86,36 @@ export default async function handler(req: any, res: any) {
 
   const lat = num(req.query.lat);
   const lon = num(req.query.lon);
+
+  // ── Modo búsqueda por palabra (pestaña Inteligencia DENUE & B2B) ──
+  if (req.query.termino !== undefined) {
+    const termino = String(req.query.termino || '').replace(/[^\p{L}\p{N} ]/gu, ' ').trim().slice(0, 60);
+    const radio = Math.min(5000, Math.max(100, Math.round(num(req.query.radio_m) || 5000)));
+    if (!termino || !Number.isFinite(lat) || !Number.isFinite(lon)) {
+      return res.status(400).json({ error: 'Faltan el término o las coordenadas.' });
+    }
+    const tokenB = (process.env.INEGI_TOKEN || TOKEN_DENUE_DEFAULT).trim();
+    try {
+      const datos = await consultarDenue(
+        `${DENUE_BUSCAR}/${encodeURIComponent(termino)}/${lat.toFixed(6)},${lon.toFixed(6)}/${radio}/${tokenB}`);
+      const items = datos.slice(0, 400).map((x: any) => ({
+        id: String(x.Id || x.CLEE || ''),
+        nombre: String(x.Nombre || '').trim() || String(x.Razon_social || '').trim(),
+        actividad: String(x.Clase_actividad || '').trim(),
+        estrato: String(x.Estrato || '').trim(),
+        telefono: String(x.Telefono || '').trim(),
+        correo: String(x.Correo_e || '').trim(),
+        web: String(x.Sitio_internet || '').trim(),
+        direccion: direccionDenue(x),
+        lat: num(x.Latitud),
+        lon: num(x.Longitud),
+      })).filter((x: any) => Number.isFinite(x.lat) && Number.isFinite(x.lon));
+      return res.status(200).json({ total: datos.length, items });
+    } catch (e: any) {
+      return res.status(502).json({ error: `No se pudo consultar el DENUE: ${e?.message || e}` });
+    }
+  }
+
   const lado = Math.min(5, Math.max(0.2, num(req.query.lado_km) || 1.5));
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < 14 || lat > 33 || lon < -119 || lon > -86) {
     return res.status(400).json({ error: 'Coordenadas inválidas.' });
@@ -68,14 +133,7 @@ export default async function handler(req: any, res: any) {
 
   let datos: any[];
   try {
-    const r = await fetch(`${DENUE}/${lat.toFixed(6)},${lon.toFixed(6)}/${radioM}/${token}`, {
-      headers: { Accept: 'application/json' },
-    });
-    if (!r.ok) return res.status(502).json({ error: `El DENUE respondió ${r.status}.` });
-    // El DENUE a veces responde el arreglo como texto JSON "doble"; se aceptan ambos.
-    let parsed: unknown = JSON.parse((await r.text()).replace(/^\uFEFF/, '').trim() || '[]');
-    if (typeof parsed === 'string') parsed = JSON.parse(parsed);
-    datos = Array.isArray(parsed) ? parsed : [];
+    datos = await consultarDenue(`${DENUE}/${lat.toFixed(6)},${lon.toFixed(6)}/${radioM}/${token}`);
   } catch (e: any) {
     return res.status(502).json({ error: `No se pudo consultar el DENUE: ${e?.message || e}` });
   }
@@ -130,7 +188,7 @@ export default async function handler(req: any, res: any) {
         clase,
         estrato: String(x.Estrato || '').trim(),
         direccion: [
-          [x.Tipo_vialidad, x.Calle].filter(Boolean).join(' ').trim(),
+          nombreVialidad(x),
           [x.Num_Exterior, x.Num_Interior].filter((v: string) => String(v || '').trim()).join(' int. '),
         ].filter(Boolean).join(' '),
         colonia: String(x.Colonia || '').trim(),

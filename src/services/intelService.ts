@@ -1,3 +1,5 @@
+import { llamarApi } from './apiCliente';
+import { BASE_TRABAJO, rutaDesdeTrabajo } from './apifyService';
 import { ReporteInteligencia, ProspectoB2B, CompetidorAgencia } from '../types';
 
 export const DENUE_API_BASE = "https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar";
@@ -70,155 +72,30 @@ function deducirMarcaAutomotriz(nombre: string): string {
   return "Multimarca / Agencia Local";
 }
 
-// Búsqueda en API DENUE o Fallback
+// Búsqueda REAL en el DENUE vía el servidor (/api/denue). Sin datos inventados de respaldo:
+// si falla, se lanza el error para mostrarlo.
 export async function buscarEnDenue(
   lat: number,
   lon: number,
-  radioMetros: number = 10000,
+  radioMetros: number = 5000,
   termino: string = "hospital",
-  tokenInegi?: string | null
+  _tokenInegi?: string | null
 ): Promise<any[]> {
-  const token = tokenInegi || obtenerTokenDenue();
-
-  if (token) {
-    try {
-      const url = `${DENUE_API_BASE}/${encodeURIComponent(termino)}/${lat},${lon}/${radioMetros}/${token}`;
-      const res = await fetch(url, {
-        headers: { Accept: "application/json" }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          return data.map((item: any) => {
-            const itemLat = parseFloat(item.Latitud || item.latitud || lat);
-            const itemLon = parseFloat(item.Longitud || item.longitud || lon);
-            const calle = item.Calle || item.calle || "";
-            const numExt = item.Num_Exterior || item.num_Exterior || "";
-            const col = item.Colonia || item.colonia || "";
-            const cp = item.CP || item.cp || "";
-            const mun = item.Municipio || item.municipio || "";
-            const ent = item.Entidad || item.entidad || "";
-            const direccion = [calle ? `${calle} ${numExt}`.trim() : '', col, cp ? `C.P. ${cp}` : '', mun, ent]
-              .filter(Boolean)
-              .join(', ');
-
-            return {
-              nombre: item.Nombre || item.nombre || "Establecimiento sin nombre",
-              actividad: item.Clase_actividad || item.clase_actividad || item.Actividad || termino,
-              telefono: item.Telefono || item.telefono || "Sin teléfono registrado",
-              email: item.Correo_e || item.correo_e || "No disponible",
-              web: item.Sitio_internet || item.sitio_internet || "",
-              direccion: direccion || "Dirección DENUE",
-              distancia_km: calcularDistanciaHaversine(lat, lon, itemLat, itemLon),
-              coordenadas: { lat: itemLat, lon: itemLon }
-            };
-          });
-        }
-      }
-    } catch {
-      // Fallback below
-    }
-  }
-
-  // Fallback realista calibrado geográficamente por municipio/estado
-  return generarDatosSimulados(lat, lon, termino);
-}
-
-function generarDatosSimulados(lat: number, lon: number, termino: string): any[] {
-  const term = termino.toLowerCase();
-
-  const mockHospitales: Array<[string, string, string, string, string]> = [
-    ["Hospital General de Zona IMSS", "Hospitales generales del sector público", "55 5729 8300", "dir.medica@imss.gob.mx", "https://www.imss.gob.mx"],
-    ["Clínica de Especialidades y Maternidad Guadalupe", "Clínicas de especialidades médicas privadas", "55 5812 4433", "contacto@clinicaguadalupe.com.mx", "https://clinicaguadalupe.com.mx"],
-    ["Centro Médico Quirúrgico Oriente", "Hospitales y centros quirúrgicos de especialidad", "55 5701 9283", "citas@cmqoriente.com", "https://cmqoriente.com"],
-    ["Unidad de Medicina Familiar No. 34", "Consultorios de medicina general del sector público", "55 5650 1122", "umf34@imss.gob.mx", "https://www.imss.gob.mx"],
-    ["Laboratorio y Diagnóstico Médico Polanco", "Laboratorios de análisis clínicos y diagnóstico", "55 5080 1910", "atencion@lmpolanco.com", "https://lmpolanco.com"],
-    ["Sanatorio Santa Fe Integral", "Hospitales generales y urgencias privadas", "55 5764 8899", "urgencias@sanatoriosantafe.com", "https://sanatoriosantafe.com"],
-    ["Clínica de Rehabilitación y Traumatología del Valle", "Servicios de rehabilitación y terapia física", "55 5654 3321", "terapia@clinicadelvalle.mx", "https://clinicadelvalle.mx"]
-  ];
-
-  const mockTransporte: Array<[string, string, string, string, string]> = [
-    ["Transportes y Enlaces Terrestres Nacionales S.A. de C.V.", "Autotransporte de carga general federal", "55 5716 9000", "ventas@enlacesnacionales.com.mx", "https://enlacesnacionales.com.mx"],
-    ["Mensajería Express y Paquetería Metropolitana", "Servicios de mensajería y paquetería express local", "55 5803 2100", "contacto@expressmetro.com", "https://expressmetro.com"],
-    ["Distribuidora Logística y Almacenaje del Centro", "Almacenamiento con refrigeración y logística", "55 5649 7711", "logistica@distribuidora-centro.mx", "https://distribuidora-centro.mx"],
-    ["Fletera y Logística Oriente de Carga Pesada", "Autotransporte de carga especializada", "55 5758 4422", "servicios@fleteraoriente.com", "https://fleteraoriente.com"],
-    ["Consolidadores de Carga del Valle de México", "Intermediación para transporte de carga multimodal", "55 5600 3388", "operaciones@consolidadoresvalle.mx", "https://consolidadoresvalle.mx"]
-  ];
-
-  const mockConstruccion: Array<[string, string, string, string, string]> = [
-    ["Construcciones y Prefabricados de México", "Edificación de naves industriales e infraestructura", "55 5755 8800", "licitaciones@prefabricadosmex.com", "https://prefabricadosmex.com"],
-    ["Aceros, Perfiles y Maquilas Industriales", "Fabricación de productos metálicos y perfiles estructurales", "55 5804 1200", "ventas@acerosperfiles.com.mx", "https://acerosperfiles.com.mx"],
-    ["Grupo Industrial Metalmecánico del Valle", "Maquinado de piezas de precisión y ensamble", "55 5657 9933", "atencion@grupometalvalle.com", "https://grupometalvalle.com"],
-    ["Prefabricados de Concreto y Materiales Pesados", "Fabricación de bloques, bovedillas y tubos de concreto", "55 5719 6644", "contacto@preconcreto.com.mx", "https://preconcreto.com.mx"],
-    ["Ingeniería de Instalaciones y Redes Hidráulicas", "Instalaciones electromecánicas e hidráulicas industriales", "55 5700 8122", "proyectos@inghidraulicas.com", "https://inghidraulicas.com"],
-    ["Industrias Plásticas y Empaques Flexibles", "Fabricación de artículos de plástico para envase y embalaje", "55 5648 3355", "ventas@plasticosempaques.mx", "https://plasticosempaques.mx"]
-  ];
-
-  const mockAgencias: Array<[string, string, string, string, string]> = [
-    ["Distribuidora Automotriz Oriente (Chevrolet)", "Comercio al por menor de automóviles nuevos y usados", "55 5803 5000", "ventas@chevroletoriente.com.mx", "https://chevroletoriente.com.mx"],
-    ["Agencia Nissan Churubusco", "Comercio de vehículos ligeros nuevos y seminuevos", "55 5634 9100", "atencion@nissanchurubusco.com", "https://nissanchurubusco.com"],
-    ["Volkswagen Autocom Sur", "Agencia distribuidora de vehículos y flotillas comerciales", "55 5698 2200", "flotillas@autocomvw.com.mx", "https://autocomvw.com.mx"]
-  ];
-
-  const mockEducacion: Array<[string, string, string, string, string]> = [
-    ["Colegio Bilingüe Montessori Oriente", "Escuelas de educación primaria y secundaria del sector privado", "55 5768 1200", "admisiones@colegiomontessorioriente.edu.mx", "https://colegiomontessorioriente.edu.mx"],
-    ["Instituto Universitario Tepeyac Campus Sur", "Escuelas de educación superior y posgrados privados", "55 5650 9944", "informes@iutepeyac.edu.mx", "https://iutepeyac.edu.mx"],
-    ["Colegio Hispano Mexicano Preparatoria", "Escuelas de educación media superior privada", "55 5755 3311", "control.escolar@hispanomexicano.edu.mx", "https://hispanomexicano.edu.mx"],
-    ["Despacho Contable & Fiscal Cárdenas y Asociados S.C.", "Bufetes y despachos de contabilidad y auditoría", "55 5698 4400", "contacto@cardenasasociados.com.mx", "https://cardenasasociados.com.mx"],
-    ["Notaría Pública No. 142 de la CDMX", "Notarías públicas y servicios notariales", "55 5700 9011", "notario142@notarioscdmx.org.mx", "https://notaria142cdmx.com"],
-    ["Firma Jurídica y Consultoría Corporativa Morales & Co.", "Bufetes jurídicos y asesoría legal empresarial", "55 5649 1199", "contacto@juridicamorales.mx", "https://juridicamorales.mx"],
-    ["Taller de Arquitectura, Urbanismo e Ingeniería Estructural", "Servicios de dibujo, diseño y arquitectura", "55 5716 3322", "proyectos@arquitecturazur.mx", "https://arquitecturazur.mx"]
-  ];
-
-  const mockRestaurantes: Array<[string, string, string, string, string]> = [
-    ["Restaurante Hacienda de Cortés (Salón y Terraza)", "Restaurantes con servicio de preparación de alimentos a la carta (>15 empleados)", "55 5659 3444", "reservaciones@haciendadecortes.com.mx", "https://haciendadecortes.com.mx"],
-    ["Pastelería y Panificadora La Esperanza Sucursal Mayor", "Panificación tradicional y pastelería con flotilla local", "55 5634 8800", "corporativo@esperanza.mx", "https://esperanza.mx"],
-    ["Restaurante Los Almendros Tradición Yucateca", "Restaurantes de comida típica mexicana con consumo en el lugar", "55 5604 1122", "contacto@losalmendros.com.mx", "https://losalmendros.com.mx"],
-    ["Plaza Comercial Vía Oriente (Administración Central)", "Administración y arrendamiento de centros y plazas comerciales", "55 5804 9000", "administracion@viaoriente.com.mx", "https://viaoriente.com.mx"],
-    ["Distribuidora Mayorista de Alimentos y Bebidas Gourmet", "Comercio al por mayor de abarrotes, vinos y productos congelados", "55 5648 7700", "pedidos@alimentosgourmetvalle.com", "https://alimentosgourmetvalle.com"],
-    ["Marisquería El Pescador del Puerto", "Restaurantes con preparación de pescados y mariscos (>12 empleados)", "55 5756 2288", "mariscos@pescadorpuerto.mx", "https://pescadorpuerto.mx"]
-  ];
-
-  const mockGobierno: Array<[string, string, string, string, string]> = [
-    ["Sede Administrativa Alcaldía / Centro de Servicios", "Oficinas y dependencias de gobierno municipal y alcaldías", "55 5654 3133", "atencion.ciudadana@alcaldia.cdmx.gob.mx", "https://cdmx.gob.mx"],
-    ["Grupo Élite de Seguridad Privada y Custodia Patrimonial", "Servicios de seguridad privada, custodia y blindaje", "55 5768 9000", "operaciones@seguridadelite.com.mx", "https://seguridadelite.com.mx"],
-    ["Servicios Integrales de Limpieza y Mantenimiento Corporativo", "Servicios de limpieza para inmuebles y oficinas empresariales", "55 5803 1155", "ventas@limpiezacorporativa.com.mx", "https://limpiezacorporativa.com.mx"],
-    ["Mantenimiento Urbano y Logística de Residuos Comerciales", "Servicios de recolección y saneamiento industrial", "55 5701 4488", "contacto@saneamientovalle.com", "https://saneamientovalle.com"]
-  ];
-
-  let rawList = mockHospitales;
-  if (term.includes("transporte") || term.includes("mensajeria") || term.includes("distribucion") || term.includes("reparto")) {
-    rawList = mockTransporte;
-  } else if (term.includes("construccion") || term.includes("industria") || term.includes("flotilla") || term.includes("empresa")) {
-    rawList = mockConstruccion;
-  } else if (term.includes("agencia") || term.includes("auto") || term.includes("distribuidora autos")) {
-    rawList = mockAgencias;
-  } else if (term.includes("escuela") || term.includes("colegio") || term.includes("universidad") || term.includes("despacho") || term.includes("notaria") || term.includes("arquitecto")) {
-    rawList = mockEducacion;
-  } else if (term.includes("restaurante") || term.includes("panaderia") || term.includes("plaza") || term.includes("alimentos")) {
-    rawList = mockRestaurantes;
-  } else if (term.includes("alcaldia") || term.includes("gobierno") || term.includes("seguridad") || term.includes("limpieza")) {
-    rawList = mockGobierno;
-  }
-
-  return rawList.map(([nom, act, tel, mail, web], i) => {
-    const dLat = ((i % 3) - 1) * 0.012 + (i * 0.003);
-    const dLon = (((i + 1) % 3) - 1) * 0.015 - (i * 0.002);
-    const itemLat = Number((lat + dLat).toFixed(6));
-    const itemLon = Number((lon + dLon).toFixed(6));
-    const dist = calcularDistanciaHaversine(lat, lon, itemLat, itemLon);
-
-    return {
-      nombre: nom,
-      actividad: act,
-      telefono: tel,
-      email: mail,
-      web: web,
-      direccion: `Av. Principal #${100 + i * 85}, Zona Industrial / Comercial, C.P. 08500, México`,
-      distancia_km: dist,
-      coordenadas: { lat: itemLat, lon: itemLon }
-    };
+  const qs = new URLSearchParams({
+    termino, lat: String(lat), lon: String(lon), radio_m: String(Math.min(5000, radioMetros)),
   });
+  const d = await llamarApi(`/api/denue?${qs.toString()}`);
+  return (d.items || []).map((it: any) => ({
+    nombre: it.nombre || "Establecimiento sin nombre",
+    actividad: it.actividad || termino,
+    telefono: it.telefono || "Sin teléfono registrado",
+    email: it.correo || "No disponible",
+    web: it.web || "",
+    direccion: it.direccion || "Dirección no disponible",
+    // Distancia desde tu lugar de trabajo (punto de partida de las rutas)
+    distancia_km: calcularDistanciaHaversine(BASE_TRABAJO.lat, BASE_TRABAJO.lon, it.lat, it.lon),
+    coordenadas: { lat: it.lat, lon: it.lon }
+  }));
 }
 
 export async function generarReporteInteligencia(
@@ -232,16 +109,31 @@ export async function generarReporteInteligencia(
   const token = tokenInegi || obtenerTokenDenue();
   const radioM = Math.round(radioKm * 1000);
 
-  // 1. Prospectos B2B
-  const [hospRaw, repRaw, flotRaw, eduRaw, restRaw, gobRaw, agenciasRaw] = await Promise.all([
-    buscarEnDenue(lat, lon, radioM, "hospital", token),
-    buscarEnDenue(lat, lon, radioM, "transporte", token),
-    buscarEnDenue(lat, lon, radioM, "construccion", token),
-    buscarEnDenue(lat, lon, radioM, "escuela", token),
-    buscarEnDenue(lat, lon, radioM, "restaurante", token),
-    buscarEnDenue(lat, lon, radioM, "alcaldia", token),
-    buscarEnDenue(lat, lon, radioM, "agencia automovil", token)
-  ]);
+  // 1. Prospectos B2B (búsquedas reales en el DENUE; máx. 5 km de radio por consulta)
+  const terminos = ["hospital", "transporte", "construccion", "escuela", "restaurante", "gobierno", "automoviles"];
+  const resultados = await Promise.allSettled(terminos.map(t => buscarEnDenue(lat, lon, radioM, t, token)));
+  const fallidas = resultados.filter(r => r.status === 'rejected') as PromiseRejectedResult[];
+  if (fallidas.length === resultados.length) {
+    throw new Error(fallidas[0]?.reason?.message || 'No se pudo consultar el DENUE.');
+  }
+  // La búsqueda del DENUE también encuentra coincidencias en el NOMBRE (p. ej. "Hospital de Ropa"),
+  // así que cada sección se filtra por el GIRO real.
+  const GIRO_POR_TERMINO: RegExp[] = [
+    /hospital|clinica|consultorio|laboratorio|medic|enfermer|ambulancia/,
+    /transporte|mensajeria|paqueteria|mudanza|carga|almacen|logistic/,
+    /construccion|edificacion|obra|fabricacion|manufactur|industria|maquinaria|herreria|estructura/,
+    /escuela|educacion|colegio|universid|bufete|contabilidad|notari|arquitect|ingenieria/,
+    /restaurante|alimentos|cafeteria|banquete|cocina|comida/,
+    /administracion publica|gobierno|seguridad|organismo|legislativ|imparticion|proteccion civil|policia/,
+    /automoviles|camionetas|agencia/,
+  ];
+  const norm = (t: string) => (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const [hospRaw, repRaw, flotRaw, eduRaw, restRaw, gobRaw, agenciasRawTodos] =
+    resultados.map((r, i) => (r.status === 'fulfilled' ? r.value : [])
+      .filter((it: any) => GIRO_POR_TERMINO[i].test(norm(it.actividad))));
+  // Competencia: solo agencias / venta de autos
+  const agenciasRaw = agenciasRawTodos.filter((it: any) => /automoviles y camionetas|agencia/i.test(
+    (it.actividad || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')));
 
   const cleanProspects = (arr: any[], enfoque: string): ProspectoB2B[] => {
     const seen = new Set<string>();
@@ -251,15 +143,16 @@ export async function generarReporteInteligencia(
       if (nom && !seen.has(nom)) {
         seen.add(nom);
         const coords = it.coordenadas;
-        const linkGps = (coords && typeof coords.lat === 'number' && typeof coords.lon === 'number' && coords.lat !== 0 && coords.lon !== 0)
-          ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lon}`
-          : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(it.direccion || nom)}`;
+        const linkGps = (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lon))
+          ? rutaDesdeTrabajo(coords.lat, coords.lon)
+          : rutaDesdeTrabajo(undefined, undefined, undefined, it.direccion || nom);
 
         res.push({
           nombre: nom,
           actividad: it.actividad || "Giro comercial",
           telefono: it.telefono || "Sin teléfono registrado",
           web: it.web || "",
+          email: it.email && it.email !== "No disponible" ? it.email : "",
           direccion: it.direccion || "Dirección no disponible",
           distancia_km: it.distancia_km || 0,
           enfoque_vehiculo: enfoque,
@@ -286,9 +179,9 @@ export async function generarReporteInteligencia(
     if (nom && !compSeen.has(nom)) {
       compSeen.add(nom);
       const coords = it.coordenadas;
-      const linkGps = (coords && typeof coords.lat === 'number' && typeof coords.lon === 'number' && coords.lat !== 0 && coords.lon !== 0)
-        ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lon}`
-        : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${nom} ${municipio} ${estado}`)}`;
+      const linkGps = (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lon))
+        ? rutaDesdeTrabajo(coords.lat, coords.lon)
+        : rutaDesdeTrabajo(undefined, undefined, undefined, `${nom} ${municipio} ${estado}`);
 
       competencia.push({
         nombre: nom,
@@ -427,7 +320,9 @@ export async function generarReporteInteligencia(
       ),
       total_competidores: competencia.length,
       cobertura_vehicular: "Comerciales (RAM, Pick-ups) + Pasajeros (Jeep, Peugeot, Dodge, Fiat)",
-      origen_datos: token ? "API Oficial DENUE INEGI (Producción)" : "DENUE INEGI (Calibrado Territorialmente)"
+      origen_datos: fallidas.length
+        ? `API Oficial DENUE INEGI (${fallidas.length} de ${terminos.length} búsquedas fallaron)`
+        : "API Oficial DENUE INEGI"
     }
   };
 }

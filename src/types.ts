@@ -136,6 +136,7 @@ export interface ProspectoB2B {
   actividad: string;
   telefono: string;
   web: string;
+  email?: string;
   direccion: string;
   distancia_km: number;
   enfoque_vehiculo?: string;

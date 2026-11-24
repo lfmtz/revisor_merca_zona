@@ -57,7 +57,8 @@ export const MarketIntelligenceSection: React.FC<MarketIntelligenceSectionProps>
   const [showTokenInput, setShowTokenInput] = useState<boolean>(false);
   const [reporte, setReporte] = useState<ReporteInteligencia | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [radioKm, setRadioKm] = useState<number>(10); // Default 10 km
+  const [radioKm, setRadioKm] = useState<number>(3); // El DENUE permite máx. 5 km por consulta
+  const [errorReporte, setErrorReporte] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'hospitales' | 'reparto' | 'flotillas' | 'educacion' | 'restaurantes' | 'gobierno' | 'competencia'>('hospitales');
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
   const [savedTokenMsg, setSavedTokenMsg] = useState<boolean>(false);
@@ -81,18 +82,23 @@ export const MarketIntelligenceSection: React.FC<MarketIntelligenceSectionProps>
   // Load report whenever estado, municipio, lat, lon, radioKm or token change
   const cargarReporte = async () => {
     setIsLoading(true);
+    setErrorReporte(null);
     try {
       const rep = await generarReporteInteligencia(estado, municipio, lat, lon, token, radioKm);
       setReporte(rep);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error al generar reporte de inteligencia:", e);
+      setReporte(null);
+      setErrorReporte(e?.message || 'No se pudo consultar el DENUE.');
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    cargarReporte();
+    // Espera a que termines de escribir antes de consultar
+    const t = window.setTimeout(cargarReporte, 900);
+    return () => window.clearTimeout(t);
   }, [estado, municipio, lat, lon, radioKm]);
 
   // Manejo de la comparación entre dos zonas
@@ -171,6 +177,44 @@ export const MarketIntelligenceSection: React.FC<MarketIntelligenceSectionProps>
       icon: <Info className="w-5 h-5 text-purple-400" />,
       label: 'ZONA FRÍA — No Priorizar'
     };
+  };
+
+  const descargarReporteCsv = () => {
+    if (!reporte) return;
+    const P = reporte.PROSPECTOS_B2B;
+    const secciones: [string, any[]][] = [
+      ['Hospitales y clínicas', P.hospitales],
+      ['Empresas de reparto y transporte', P.empresas_reparto],
+      ['Construcción e industria (flotillas)', P.empresas_flotilla],
+      ['Educación y profesionistas', P.educacion_profesionistas],
+      ['Restaurantes y comercio', P.restaurantes_comercio],
+      ['Gobierno y servicios', P.gobierno_servicios],
+    ];
+    const enc = ['Sección', 'Nombre', 'Actividad (DENUE)', 'Teléfono', 'Correo', 'Sitio web', 'Dirección',
+      'Distancia desde mi trabajo (km)', 'Enfoque de vehículo', 'Ruta desde mi trabajo', 'Latitud', 'Longitud'];
+    const filas: (string | number)[][] = [];
+    for (const [sec, lista] of secciones) {
+      for (const p of lista) {
+        filas.push([sec, p.nombre, p.actividad, p.telefono === 'Sin teléfono registrado' ? '' : p.telefono,
+          p.email || '', p.web || '', p.direccion, p.distancia_km, p.enfoque_vehiculo || '', p.link_gps || '',
+          p.coordenadas?.lat ?? '', p.coordenadas?.lon ?? '']);
+      }
+    }
+    for (const c of reporte.COMPETENCIA) {
+      filas.push(['Competencia (agencias de autos)', c.nombre, c.marca_estimada, '', '', '', '', c.distancia_km,
+        '', c.link_gps || '', c.coordenadas?.lat ?? '', c.coordenadas?.lon ?? '']);
+    }
+    const esc = (v: string | number) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const csv = '\uFEFF' + [enc, ...filas].map(f => f.map(esc).join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    const a = document.createElement('a');
+    a.href = url;
+    const zonaArchivo = (municipio || estado).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_');
+    a.download = `reporte_denue_${zonaArchivo}_${radioKm}km_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const descargarReporteTxt = () => {
@@ -317,13 +361,22 @@ export const MarketIntelligenceSection: React.FC<MarketIntelligenceSectionProps>
             </button>
 
             {reporte && (
-              <button
-                onClick={descargarReporteTxt}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#6B21A8] to-[#9333EA] hover:from-[#9333EA] hover:to-[#A855F7] text-xs font-bold text-white flex items-center gap-2 shadow-lg shadow-purple-950/50 transition"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Exportar Reporte (.txt)</span>
-              </button>
+              <>
+                <button
+                  id="btn-reporte-csv"
+                  onClick={descargarReporteCsv}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-500 hover:from-emerald-600 hover:to-emerald-400 text-xs font-bold text-white flex items-center gap-2 shadow-lg transition"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Descargar Reporte (.csv)</span>
+                </button>
+                <button
+                  onClick={descargarReporteTxt}
+                  className="px-3 py-2 rounded-xl bg-[#1C1433] hover:bg-[#2A1D4A] text-xs font-semibold text-[#E9D5FF] flex items-center gap-1.5 transition"
+                >
+                  <span>.txt</span>
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -347,7 +400,7 @@ export const MarketIntelligenceSection: React.FC<MarketIntelligenceSectionProps>
                   >
                     inegi.org.mx/app/api/denue/v1/consulta/
                   </a>{' '}
-                  registrando tu correo. (Si no tienes token, la app utiliza datos territoriales calibrados de alta precisión).
+                  registrando tu correo.. La app ya trae uno configurado; los datos siempre son reales del DENUE.
                 </p>
               </div>
             </div>
@@ -393,27 +446,27 @@ export const MarketIntelligenceSection: React.FC<MarketIntelligenceSectionProps>
           </div>
         </div>
 
-        {/* Slider de 4 posiciones: 3, 5, 10, 15 km */}
+        {/* Slider de 4 posiciones: 1, 2, 3, 5 km (máximo del DENUE) */}
         <div className="flex items-center gap-3 self-stretch md:self-auto justify-end">
-          <span className="text-[11px] font-mono text-gray-400 hidden sm:inline">3 km</span>
+          <span className="text-[11px] font-mono text-gray-400 hidden sm:inline">1 km</span>
           <input
             id="slider-radio-denue"
             type="range"
             min={0}
             max={3}
             step={1}
-            value={[3, 5, 10, 15].indexOf(radioKm)}
+            value={[1, 2, 3, 5].indexOf(radioKm)}
             onChange={(e) => {
-              const rMap = [3, 5, 10, 15];
+              const rMap = [1, 2, 3, 5];
               setRadioKm(rMap[parseInt(e.target.value, 10)]);
             }}
             className="w-36 sm:w-44 accent-[#9333EA] cursor-pointer"
           />
-          <span className="text-[11px] font-mono text-gray-400 hidden sm:inline">15 km</span>
+          <span className="text-[11px] font-mono text-gray-400 hidden sm:inline">5 km</span>
 
           {/* Botones de acceso rápido */}
           <div className="flex items-center gap-1.5 ml-2">
-            {[3, 5, 10, 15].map((r) => (
+            {[1, 2, 3, 5].map((r) => (
               <button
                 key={r}
                 id={`btn-radio-${r}km`}
@@ -600,6 +653,14 @@ export const MarketIntelligenceSection: React.FC<MarketIntelligenceSectionProps>
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {errorReporte && !isLoading && (
+        <div className="bg-red-950/40 border border-red-700/60 rounded-2xl p-4 text-sm text-red-200">
+          <p className="font-bold text-red-300">No se pudo consultar el DENUE</p>
+          <p className="text-xs mt-1">{errorReporte}</p>
+          <button onClick={cargarReporte} className="mt-2 text-xs font-bold underline">Reintentar</button>
         </div>
       )}
 
