@@ -26,6 +26,27 @@ const SIN_DATOS = '#9CA3AF';
 // Escala de calor (de poca a mucha concentración)
 const ESCALA_CALOR = ['#FDE68A', '#FDBA74', '#F97316', '#DC2626', '#7F1D1D'];
 
+// Mapas base gratuitos y sin clave (CARTO ya exige API key).
+const FONDOS = {
+  claro: {
+    nombre: 'Mapa claro',
+    capas: [
+      { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        opts: { maxZoom: 16, attribution: 'Tiles &copy; Esri — Esri, HERE, Garmin, &copy; OpenStreetMap' } },
+      { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        opts: { maxZoom: 16, pane: 'etiquetas' } },
+    ],
+  },
+  calles: {
+    nombre: 'Calles',
+    capas: [
+      { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        opts: { maxZoom: 19, attribution: '&copy; OpenStreetMap' } },
+    ],
+  },
+} as const;
+type Fondo = keyof typeof FONDOS;
+
 function esc(t: string): string {
   return String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
 }
@@ -48,6 +69,8 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
   const [filtroGiro, setFiltroGiro] = useState('');
   const [mostrarAnillos, setMostrarAnillos] = useState(true);
   const [zoom, setZoom] = useState(13);
+  const [fondo, setFondo] = useState<Fondo>('claro');
+  const capaFondo = useRef<L.LayerGroup | null>(null);
 
   const nivelPorColonia = useMemo(() => {
     const m = new Map<string, string>();
@@ -60,11 +83,13 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
     if (!contenedor.current || mapa.current) return;
     const m = L.map(contenedor.current, { zoomControl: true, preferCanvas: true })
       .setView([centroLat, centroLon], 13);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO · Datos: DENUE INEGI',
-      subdomains: 'abcd',
-      maxZoom: 19,
-    }).addTo(m);
+    m.attributionControl.addAttribution('Datos: DENUE INEGI');
+    // Panel para que los nombres de calles queden ENCIMA de los colores del mapa de calor
+    m.createPane('etiquetas');
+    const pe = m.getPane('etiquetas')!;
+    pe.style.zIndex = '450';
+    pe.style.pointerEvents = 'none';
+    capaFondo.current = L.layerGroup().addTo(m);
     capaBase.current = L.layerGroup().addTo(m);
     capaDatos.current = L.layerGroup().addTo(m);
     m.on('zoomend', () => setZoom(m.getZoom()));
@@ -78,6 +103,22 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
 
     return () => { m.remove(); mapa.current = null; };
   }, []);
+
+  // ── Mapa base (con cambio automático si falla) ───────────
+  useEffect(() => {
+    const g = capaFondo.current;
+    if (!g) return;
+    g.clearLayers();
+    let errores = 0;
+    for (const c of FONDOS[fondo].capas) {
+      const t = L.tileLayer(c.url, c.opts as L.TileLayerOptions);
+      t.on('tileerror', () => {
+        errores++;
+        if (errores === 6) setFondo(f => (f === 'claro' ? 'calles' : 'claro'));
+      });
+      t.addTo(g);
+    }
+  }, [fondo]);
 
   // ── Tu trabajo + anillos de distancia ────────────────────
   useEffect(() => {
@@ -290,10 +331,20 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
           {boton('calor', '🔥 Mapa de calor')}
           {boton('negocios', '📍 Negocios')}
         </div>
+        <div className="flex items-center gap-3">
+        <div className="flex rounded-lg overflow-hidden border border-purple-800/60 text-[11px] font-bold">
+          {(Object.keys(FONDOS) as Fondo[]).map(f => (
+            <button key={f} id={`btn-fondo-${f}`} onClick={() => setFondo(f)}
+              className={`px-2.5 py-1.5 ${fondo === f ? 'bg-[#9333EA] text-white' : 'bg-[#1C1433] text-[#E9D5FF]'}`}>
+              {FONDOS[f].nombre}
+            </button>
+          ))}
+        </div>
         <label className="flex items-center gap-2 text-xs text-[#E9D5FF] cursor-pointer">
           <input type="checkbox" checked={mostrarAnillos} onChange={e => setMostrarAnillos(e.target.checked)} className="accent-purple-500" />
           Anillos de 2, 5 y 10 km desde mi trabajo
         </label>
+        </div>
       </div>
 
       {/* Filtros según vista */}

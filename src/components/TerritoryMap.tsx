@@ -207,7 +207,7 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({
 
       // CartoDB Positron: Altamente confiable, rápido, sin restricciones de iframe/referrer y alto contraste
       const tileUrl = tileProvider === 'cartodb'
-        ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+        ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
         : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
       const tileLayer = L.tileLayer(tileUrl, {
@@ -255,7 +255,7 @@ export const TerritoryMap: React.FC<TerritoryMapProps> = ({
       mapInstanceRef.current.removeLayer(tileLayerRef.current);
     }
     const tileUrl = tileProvider === 'cartodb'
-      ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+      ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'
       : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
     const newLayer = L.tileLayer(tileUrl, {
