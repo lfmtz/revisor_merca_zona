@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { ResultadoNse } from '../services/denueScan';
-import { rutaDesdeTrabajo, BASE_TRABAJO } from '../services/apifyService';
+import { rutaDesdeTrabajo, PUNTO_PARTIDA } from '../services/apifyService';
 
 const NIVELES = ['A/B', 'C+', 'C', 'C-', 'D+', 'D/E'] as const;
 
@@ -178,7 +178,7 @@ export const NseZonaPanel: React.FC<Props> = ({ nse, zona }) => {
         de mayor ingreso (consultorios de especialidad, restaurantes a la carta, despachos, bancos, inmobiliarias)
         contra giros típicos de zonas populares (abarrotes, tortillerías, purificadoras, pollerías), además del tamaño
         de los negocios y cuántos tienen sitio web. Se calibró con zonas conocidas (Polanco ≈ A/B, Del Valle ≈ C+,
-        Neza ≈ D+). Colonias con menos de 25 negocios no se califican. Distancias y rutas desde {BASE_TRABAJO.direccion}.
+        Neza ≈ D+). Colonias con menos de 25 negocios no se califican. Distancias y rutas desde {PUNTO_PARTIDA.direccion}.
       </p>
     </div>
   );

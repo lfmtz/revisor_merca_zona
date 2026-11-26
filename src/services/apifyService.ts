@@ -45,6 +45,23 @@ export const BASE_TRABAJO = {
   lon: -99.069271,
 };
 
+export interface PuntoPartida {
+  nombre: string;
+  direccion: string;
+  lat: number;
+  lon: number;
+}
+
+/**
+ * Punto desde el que se calculan distancias y rutas (mi trabajo, mi ubicación actual
+ * u otra dirección). Se cambia con establecerPuntoPartida() antes de escanear.
+ */
+export const PUNTO_PARTIDA: PuntoPartida = { ...BASE_TRABAJO };
+
+export function establecerPuntoPartida(p: PuntoPartida) {
+  Object.assign(PUNTO_PARTIDA, p);
+}
+
 export interface SaldoApify {
   limiteUsd: number;
   usadoUsd: number;
@@ -80,7 +97,7 @@ export function calcularCostoApify(totalRegistros: number, scrapeContacts: boole
 }
 
 export function rutaDesdeTrabajo(lat?: number, lon?: number, placeId?: string, texto?: string): string {
-  const origen = `${BASE_TRABAJO.lat},${BASE_TRABAJO.lon}`;
+  const origen = `${PUNTO_PARTIDA.lat},${PUNTO_PARTIDA.lon}`;
   if (lat !== undefined && lon !== undefined) {
     let url = `https://www.google.com/maps/dir/?api=1&origin=${origen}&destination=${lat},${lon}&travelmode=driving`;
     if (placeId) url += `&destination_place_id=${encodeURIComponent(placeId)}`;
@@ -94,8 +111,8 @@ export async function extraerConApify(
   cat2: string = '',
   municipio: string = '',
   estado: string = '',
-  baseLat: number = BASE_TRABAJO.lat,
-  baseLon: number = BASE_TRABAJO.lon,
+  baseLat: number = PUNTO_PARTIDA.lat,
+  baseLon: number = PUNTO_PARTIDA.lon,
   maxResultados: number = 100,
   opciones: {
     correos?: boolean;
@@ -279,15 +296,18 @@ export function descargarCsvSenderPlus(items: ApifyPlaceItem[], filename: string
 
 export function descargarCsvRutaVisitas(items: ApifyPlaceItem[], filename: string) {
   // MEJORA 3: TAB 2 — "🚶 Visitar en persona" Columnas: #, Nombre, Categoría, Teléfono, Colonia, Distancia, Link_GPS, Origen
-  const headers = ["#", "Nombre", "Categoría", "Teléfono", "Colonia", "Distancia_KM", "Link_GPS", "Origen"];
+  const headers = ["#", "Nombre", "Categoría", "Teléfono", "Dirección", "Colonia", "Calificación", "Distancia_KM", "Link_GPS", "Google_Maps", "Origen"];
   const rows = items.map((it, idx) => [
     idx + 1,
     `"${(it.nombre || '').replace(/"/g, '""')}"`,
     `"${(it.categoria || '').replace(/"/g, '""')}"`,
     `"${(it.telefono || '').replace(/"/g, '""')}"`,
+    `"${(it.direccion || '').replace(/"/g, '""')}"`,
     `"${(it.colonia || '').replace(/"/g, '""')}"`,
+    it.calificacion || '',
     it.distancia_km ?? '',
     `"${it.link_gps}"`,
+    `"${it.url_maps}"`,
     `"${(it.origen || '').replace(/"/g, '""')}"`
   ]);
 

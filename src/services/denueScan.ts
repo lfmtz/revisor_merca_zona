@@ -8,8 +8,8 @@ import {
   IndicadoresZona, indicadoresVacios, sumarIndicadores, calcularIndiceNse, nivelDesdeIndice, NivelNse,
 } from '../utils/nse';
 import { llamarApi } from './apiCliente';
-import { BASE_TRABAJO, rutaDesdeTrabajo } from './apifyService';
-import type { LiveScanProgressUpdate } from './scraperEngine';
+import { PUNTO_PARTIDA, rutaDesdeTrabajo } from './apifyService';
+import type { LiveScanProgressUpdate } from '../types';
 
 export interface ColoniaNse {
   colonia: string;
@@ -190,7 +190,7 @@ export async function escanearZonaDenue(
     return {
       colonia: titulo(nombre), cp: c.cp, total: c.ind.total, indice,
       nivel: nivelDesdeIndice(indice), lat, lon,
-      distancia_km: distanciaKm(BASE_TRABAJO.lat, BASE_TRABAJO.lon, lat, lon),
+      distancia_km: distanciaKm(PUNTO_PARTIDA.lat, PUNTO_PARTIDA.lon, lat, lon),
     };
   }).sort((a, b) => b.total - a.total);
   const indiceZona = calcularIndiceNse(indicadores);
@@ -236,8 +236,8 @@ export async function escanearZonaDenue(
     });
   }
   leads.sort((a, b) =>
-    distanciaKm(BASE_TRABAJO.lat, BASE_TRABAJO.lon, a.lat!, a.lng!) -
-    distanciaKm(BASE_TRABAJO.lat, BASE_TRABAJO.lon, b.lat!, b.lng!));
+    distanciaKm(PUNTO_PARTIDA.lat, PUNTO_PARTIDA.lon, a.lat!, a.lng!) -
+    distanciaKm(PUNTO_PARTIDA.lat, PUNTO_PARTIDA.lon, b.lat!, b.lng!));
 
   const segundos = Math.round((Date.now() - inicio) / 1000);
   const conWeb = indicadores.web;

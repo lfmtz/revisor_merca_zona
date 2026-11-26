@@ -34,7 +34,7 @@ import {
   obtenerSaldoApify,
   avisarSaldoCambiado,
   SaldoApify,
-  BASE_TRABAJO
+  PUNTO_PARTIDA
 } from '../services/apifyService';
 import { TerritoryMap } from './TerritoryMap';
 
@@ -57,8 +57,8 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   categoria,
   municipio,
   estado,
-  baseLat = BASE_TRABAJO.lat,
-  baseLon = BASE_TRABAJO.lon,
+  baseLat = PUNTO_PARTIDA.lat,
+  baseLon = PUNTO_PARTIDA.lon,
   circulo
 }) => {
   // MEJORA 1: 2 Categorías simultáneas
@@ -370,7 +370,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
               <p className="text-[11px] text-amber-300">
                 💰 Costo máximo aprox.: USD {costoMaximo.toFixed(2)}
                 {saldo && <> · Saldo disponible: <b>USD {saldo.disponibleUsd.toFixed(2)}</b></>}
-                {' · '}📌 Distancias y rutas desde: {BASE_TRABAJO.direccion}
+                {' · '}📌 Distancias y rutas desde: {PUNTO_PARTIDA.direccion}
               </p>
               {saldoInsuficiente && (
                 <p className="text-[11px] text-red-300 font-bold">
@@ -635,7 +635,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                             <th className="py-2.5 px-3 font-bold">Nombre</th>
                             <th className="py-2.5 px-3 font-bold">Categoría</th>
                             <th className="py-2.5 px-3 font-bold">Teléfono</th>
-                            <th className="py-2.5 px-3 font-bold">Colonia</th>
+                            <th className="py-2.5 px-3 font-bold">Dirección</th>
                             <th className="py-2.5 px-3 font-bold text-amber-400">Distancia</th>
                             <th className="py-2.5 px-3 font-bold text-center">Link GPS</th>
                             <th className="py-2.5 px-3 font-bold text-purple-300">Origen</th>
@@ -719,8 +719,8 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                                 <td className="py-2.5 px-3 font-mono text-purple-200 whitespace-nowrap">
                                   {item.telefono}
                                 </td>
-                                <td className="py-2.5 px-3 text-gray-300">
-                                  {item.colonia || 'Centro'}
+                                <td className="py-2.5 px-3 text-gray-300 min-w-[240px]">
+                                  {item.direccion}
                                 </td>
                                 <td className="py-2.5 px-3 font-mono font-bold text-amber-400 whitespace-nowrap">
                                   {item.distancia_km ?? "—"} km

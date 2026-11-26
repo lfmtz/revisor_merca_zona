@@ -7,9 +7,9 @@ export const MODOS_CUADRICULA: Record<GridMode, GridModeConfig> = {
     modo: 'express',
     paso_km: 3.0,
     radio_celda_km: 2.5,
-    descripcion: 'Express — 5 a 15 min',
-    cobertura: '~40% del total real',
-    cobertura_pct: 40,
+    descripcion: 'Express — celdas de 3 km (más rápido)',
+    cobertura: 'Todos los negocios del DENUE',
+    cobertura_pct: 100,
     factor_estimacion: 10,
     uso: 'Vista rápida de categorías'
   },
@@ -17,9 +17,9 @@ export const MODOS_CUADRICULA: Record<GridMode, GridModeConfig> = {
     modo: 'estandar',
     paso_km: 1.5,
     radio_celda_km: 1.2,
-    descripcion: 'Estándar — 20 a 45 min',
-    cobertura: '~70% del total real',
-    cobertura_pct: 70,
+    descripcion: 'Estándar — celdas de 1.5 km',
+    cobertura: 'Todos los negocios del DENUE',
+    cobertura_pct: 100,
     factor_estimacion: 3,
     uso: 'Análisis de mercado confiable'
   },
@@ -27,9 +27,9 @@ export const MODOS_CUADRICULA: Record<GridMode, GridModeConfig> = {
     modo: 'completo',
     paso_km: 0.8,
     radio_celda_km: 0.7,
-    descripcion: 'Completo — 1 a 3 horas',
-    cobertura: '~90% del total real',
-    cobertura_pct: 90,
+    descripcion: 'Completo — celdas de 0.8 km (mapa más fino)',
+    cobertura: 'Todos los negocios del DENUE',
+    cobertura_pct: 100,
     factor_estimacion: 1.2,
     uso: 'Base de datos definitiva de la zona'
   }
@@ -208,16 +208,14 @@ export function estimarAntesDeEjecutar(
   const celdas = generarCuadricula(19.4326, -99.1332, radioKm, modo);
   const numCeldas = celdas.length;
   const config = MODOS_CUADRICULA[modo];
-  const segPorCelda = 8; // Promedio conservador
+  // Escaneo real con DENUE: ~5–15 s por celda, 3 celdas en paralelo
+  const segPorCelda = modo === 'express' ? 12 : modo === 'estandar' ? 6 : 4;
+  const tiempoSeg = (numCeldas * segPorCelda) / 3;
+  const tiempoMin = tiempoSeg / 60;
+  const maxResultados = 0;
+  const resultadosEsperados = 0; // Se conoce al escanear
 
-  const tiempoMin = (numCeldas * segPorCelda) / 60;
-  const maxResultados = numCeldas * 120;
-  const resultadosEsperados = Math.round(maxResultados * 0.6);
-
-  let tiempoStr = `~${Math.max(1, Math.round(tiempoMin))} minutos`;
-  if (tiempoMin >= 60) {
-    tiempoStr = `~${(tiempoMin / 60).toFixed(1)} horas`;
-  }
+  const tiempoStr = tiempoSeg < 60 ? `~${Math.max(10, Math.round(tiempoSeg / 10) * 10)} segundos` : `~${Math.round(tiempoMin)} minutos`;
 
   return {
     modo,

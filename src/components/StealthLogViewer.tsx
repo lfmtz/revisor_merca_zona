@@ -17,7 +17,7 @@ export const StealthLogViewer: React.FC<StealthLogViewerProps> = ({ logs, isOpen
       <div className="p-3 bg-[#2D2540] border-b border-[#6B21A8]/60 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Terminal className="w-4 h-4 text-[#C084FC]" />
-          <span className="text-xs font-bold text-white">Consola Stealth & Extracción</span>
+          <span className="text-xs font-bold text-white">Registro del escaneo</span>
           <span className="text-[10px] bg-[#22C55E]/20 text-[#22C55E] px-1.5 py-0.5 rounded border border-[#22C55E]/40 font-mono">
             {logs.length} eventos
           </span>

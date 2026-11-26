@@ -1,5 +1,5 @@
 import { llamarApi } from './apiCliente';
-import { BASE_TRABAJO, rutaDesdeTrabajo } from './apifyService';
+import { PUNTO_PARTIDA, rutaDesdeTrabajo } from './apifyService';
 import { ReporteInteligencia, ProspectoB2B, CompetidorAgencia } from '../types';
 
 export const DENUE_API_BASE = "https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar";
@@ -93,7 +93,7 @@ export async function buscarEnDenue(
     web: it.web || "",
     direccion: it.direccion || "Dirección no disponible",
     // Distancia desde tu lugar de trabajo (punto de partida de las rutas)
-    distancia_km: calcularDistanciaHaversine(BASE_TRABAJO.lat, BASE_TRABAJO.lon, it.lat, it.lon),
+    distancia_km: calcularDistanciaHaversine(PUNTO_PARTIDA.lat, PUNTO_PARTIDA.lon, it.lat, it.lon),
     coordenadas: { lat: it.lat, lon: it.lon }
   }));
 }

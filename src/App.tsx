@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
-  PythonProjectModal 
-} from './components/PythonProjectModal';
-import { 
   EthicalNoticeModal 
 } from './components/EthicalNoticeModal';
 import { 
@@ -28,12 +25,7 @@ import {
   ExtractionLog, 
   ScraperSettings 
 } from './types';
-import { 
-  scanTerritoryWithGrid, 
-  LiveScanProgressUpdate,
-  REAL_GOOGLE_MAPS_CATEGORIES,
-  TERMINOS_BUSQUEDA 
-} from './services/scraperEngine';
+import type { LiveScanProgressUpdate } from './types';
 import { 
   geocodificarZona, 
   generarCuadricula, 
@@ -49,7 +41,8 @@ import {
 } from './utils/dataProcessor';
 import { ESTADOS_MEXICO, ESTADOS_DATA } from './data/mexico_geo';
 import { escanearZonaDenue, ResultadoNse } from './services/denueScan';
-import { BASE_TRABAJO } from './services/apifyService';
+import { BASE_TRABAJO, PUNTO_PARTIDA, PuntoPartida, establecerPuntoPartida } from './services/apifyService';
+import { PuntoPartidaSelector, ModoUbicacion } from './components/PuntoPartidaSelector';
 import { NseZonaPanel } from './components/NseZonaPanel';
 import { SaldoApifyBadge } from './components/SaldoApifyBadge';
 import { MapaZona } from './components/MapaZona';
@@ -99,8 +92,11 @@ export default function App() {
   const [baseEstado, setBaseEstado] = useState<string>('Ciudad de México');
   const [baseMunicipio, setBaseMunicipio] = useState<string>('Iztacalco');
   const [radioKm, setRadioKm] = useState<number>(8);
-  // Escanear un círculo alrededor de mi trabajo (sin limitarse a un municipio/estado)
-  const [alrededorTrabajo, setAlrededorTrabajo] = useState<boolean>(true);
+  // Punto de partida: mi trabajo, mi ubicación (GPS), otra dirección o un municipio completo
+  const [modoUbicacion, setModoUbicacion] = useState<ModoUbicacion>('trabajo');
+  const [puntoElegido, setPuntoElegido] = useState<PuntoPartida | null>({ ...BASE_TRABAJO });
+  // Con punto de partida se escanea un círculo sin limitarse a un municipio/estado
+  const alrededorTrabajo = modoUbicacion !== 'municipio';
   // Lo que se usó en el último escaneo (para mapa, Apify y reportes)
   const [escaneoAlrededor, setEscaneoAlrededor] = useState<boolean>(false);
   const [gridMode, setGridMode] = useState<GridMode>('estandar');
@@ -146,7 +142,6 @@ export default function App() {
   // Modals
   const [selectedApifyCat, setSelectedApifyCat] = useState<{ nombre: string; count: number } | null>(null);
   const [selectedExtractCat, setSelectedExtractCat] = useState<string | null>(null);
-  const [isPythonModalOpen, setIsPythonModalOpen] = useState<boolean>(false);
   const [isEthicalModalOpen, setIsEthicalModalOpen] = useState<boolean>(false);
   const [isLogViewerOpen, setIsLogViewerOpen] = useState<boolean>(false);
   const [copiedPhones, setCopiedPhones] = useState<boolean>(false);
@@ -158,9 +153,9 @@ export default function App() {
 
   // Geocoding and Grid Calculations
   const geoCenter = useMemo(() => {
-    if (alrededorTrabajo) return { lat: BASE_TRABAJO.lat, lon: BASE_TRABAJO.lon, radio_km: radioKm };
+    if (alrededorTrabajo && puntoElegido) return { lat: puntoElegido.lat, lon: puntoElegido.lon, radio_km: radioKm };
     return geocodificarZona(estado, municipio);
-  }, [estado, municipio, alrededorTrabajo, radioKm]);
+  }, [estado, municipio, alrededorTrabajo, puntoElegido, radioKm]);
 
   const baseGeo = useMemo(() => {
     return geocodificarZona(baseEstado || estado, baseMunicipio);
@@ -215,6 +210,13 @@ export default function App() {
 
   const handleStartScan = async () => {
     if (!estado || estado === '-- Selecciona un estado --') return;
+    if (alrededorTrabajo && !puntoElegido) {
+      addLog('⚠️ Primero elige el punto de partida (tu ubicación o una dirección).', 'warning');
+      document.getElementById('punto-partida-config')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    // Distancias, rutas y Apify salen desde el punto elegido (en modo municipio, desde mi trabajo)
+    establecerPuntoPartida(alrededorTrabajo && puntoElegido ? puntoElegido : { ...BASE_TRABAJO });
 
     setCurrentScreen('scanning');
     setIsScanning(true);
@@ -239,7 +241,10 @@ export default function App() {
         },
         stopRef.current,
         alrededorTrabajo
-          ? { centro: { lat: BASE_TRABAJO.lat, lon: BASE_TRABAJO.lon }, etiqueta: `${radioKm} km alrededor de mi trabajo` }
+          ? {
+              centro: { lat: puntoElegido!.lat, lon: puntoElegido!.lon },
+              etiqueta: `${radioKm} km alrededor de ${modoUbicacion === 'trabajo' ? 'mi trabajo' : modoUbicacion === 'gps' ? 'mi ubicación' : puntoElegido!.direccion.split(',').slice(0, 2).join(',')}`,
+            }
           : {}
       );
       setEscaneoAlrededor(alrededorTrabajo);
@@ -361,16 +366,7 @@ export default function App() {
             className="px-3 py-1.5 rounded-lg border border-[#6B21A8]/60 hover:border-[#9333EA] bg-[#1E1635] text-xs font-semibold text-[#E9D5FF] flex items-center gap-1.5 transition"
           >
             <Terminal className="w-3.5 h-3.5 text-[#C084FC]" />
-            <span className="hidden md:inline">Logs Playwright</span>
-          </button>
-
-          <button
-            id="btn-open-python-code"
-            onClick={() => setIsPythonModalOpen(true)}
-            className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#6B21A8] to-[#9333EA] hover:from-[#9333EA] hover:to-[#A855F7] text-xs font-bold text-white flex items-center gap-1.5 shadow-md shadow-purple-950/50 transition"
-          >
-            <Code2 className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Código Python</span>
+            <span className="hidden md:inline">Registro</span>
           </button>
 
           <button
@@ -483,26 +479,14 @@ export default function App() {
                     </h3>
                   </div>
 
-                  <label
-                    htmlFor="chk-alrededor-trabajo"
-                    className={`flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition ${alrededorTrabajo
-                      ? 'border-[#C084FC] bg-purple-900/30' : 'border-[#3B1F6E]/60 bg-[#0A0713]'}`}
-                  >
-                    <input
-                      id="chk-alrededor-trabajo"
-                      type="checkbox"
-                      checked={alrededorTrabajo}
-                      onChange={(e) => setAlrededorTrabajo(e.target.checked)}
-                      className="mt-0.5 w-4 h-4 accent-purple-500"
+                  <div id="punto-partida-config">
+                    <PuntoPartidaSelector
+                      modo={modoUbicacion}
+                      punto={puntoElegido}
+                      radioKm={radioKm}
+                      onCambio={(m, p) => { setModoUbicacion(m); setPuntoElegido(p); }}
                     />
-                    <span className="text-xs">
-                      <b className="text-white text-sm">📍 Alrededor de mi trabajo</b>
-                      <span className="block text-[#E9D5FF]/70 mt-0.5">
-                        Escanea {radioKm} km a la redonda desde {BASE_TRABAJO.direccion}, sin importar municipio ni estado
-                        (incluye Iztacalco, Neza, Iztapalapa, etc.). Desmárcalo para escanear un municipio específico.
-                      </span>
-                    </span>
-                  </label>
+                  </div>
 
                   <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${alrededorTrabajo ? 'opacity-40 pointer-events-none' : ''}`}>
                     {/* Estado */}
@@ -700,10 +684,10 @@ export default function App() {
                     <div className="flex items-center justify-between text-sm py-1.5 border-b border-purple-900/30">
                       <span className="text-[#E9D5FF] flex items-center gap-2">
                         <Store className="w-4 h-4 text-emerald-400" />
-                        Negocios reales esperados:
+                        Negocios:
                       </span>
-                      <span className="font-bold text-[#22C55E] font-mono text-base">
-                        ~{gridEstimation.resultados_esperados.toLocaleString()}
+                      <span className="font-bold text-[#22C55E] text-xs">
+                        se cuentan al escanear (DENUE)
                       </span>
                     </div>
 
@@ -728,16 +712,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Multi-Search Rotation Notice */}
-                  <div className="bg-[#0D0818] border border-purple-900/40 rounded-xl p-3.5 text-xs text-[#E9D5FF]/80 space-y-1.5">
-                    <p className="font-semibold text-white flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                      Rotación Activa de {TERMINOS_BUSQUEDA.length} Términos:
-                    </p>
-                    <p className="text-[11px] text-[#C084FC] font-mono">
-                      vidrieras, materiales, ferreterías, talleres, distribuidoras, bodegas, servicios...
-                    </p>
-                  </div>
 
                   {/* Big CTA Button */}
                   <button
@@ -750,7 +724,7 @@ export default function App() {
                   </button>
 
                   <p className="text-[11px] text-center text-[#E9D5FF]/60">
-                    Playwright Stealth activado • Sin bloqueo de 120 resultados
+                    Datos reales del DENUE (INEGI) • Gratis: el escaneo no gasta créditos de Apify
                   </p>
                 </div>
               </div>
@@ -779,7 +753,7 @@ export default function App() {
                     </h2>
                   </div>
                   <p className="text-xs sm:text-sm text-[#C084FC]">
-                    Modo {gridMode.toUpperCase()} — Rotando término: <span className="text-emerald-400 font-mono font-bold">"{scanProgress.termino_actual}"</span>
+                    Modo {gridMode.toUpperCase()} — Fuente: <span className="text-emerald-400 font-mono font-bold">DENUE INEGI</span>
                   </p>
                 </div>
 
@@ -933,7 +907,7 @@ export default function App() {
               <div className="flex items-center justify-between text-xs text-[#C084FC] font-bold pb-2 border-b border-purple-900/30">
                 <span className="flex items-center gap-1.5">
                   <Terminal className="w-4 h-4 text-emerald-400" />
-                  Terminal de Actividad Playwright Stealth
+                  Registro del escaneo
                 </span>
                 <span className="text-[10px] text-gray-400 font-mono">En vivo</span>
               </div>
@@ -971,7 +945,7 @@ export default function App() {
                     </h2>
                   </div>
                   <p className="text-xs text-[#C084FC] mt-1">
-                    {zoneResult.celdas_procesadas} celdas procesadas • {zoneResult.tiempo_escaneo}s de ejecución • Cobertura estimada: {zoneResult.cobertura_pct}%
+                    {zoneResult.celdas_procesadas} celdas procesadas • {zoneResult.tiempo_escaneo}s de ejecución • Celdas completadas: {zoneResult.cobertura_pct}%
                   </p>
                 </div>
 
@@ -983,15 +957,6 @@ export default function App() {
                   >
                     <RotateCcw className="w-4 h-4 text-[#C084FC]" />
                     <span>Nuevo Escaneo</span>
-                  </button>
-
-                  <button
-                    id="btn-view-python-results"
-                    onClick={() => setIsPythonModalOpen(true)}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#6B21A8] to-[#9333EA] hover:from-[#9333EA] hover:to-[#A855F7] text-xs font-bold text-white flex items-center gap-1.5 shadow-lg shadow-purple-950/60 transition"
-                  >
-                    <Code2 className="w-4 h-4" />
-                    <span>Ver Scripts Python</span>
                   </button>
                 </div>
               </div>
@@ -1156,7 +1121,7 @@ export default function App() {
                           <th className="py-3.5 px-4">Giro (DENUE INEGI)</th>
                           <th className="py-3.5 px-4 text-right">Negocios</th>
                           <th className="py-3.5 px-4 text-right">% del Total</th>
-                          <th className="py-3.5 px-4 text-right">Est. Real Apify</th>
+                          <th className="py-3.5 px-4 text-right">Máx. a bajar en Apify</th>
                           <th className="py-3.5 px-4 text-right">Costo Apify (USD)</th>
                           <th className="py-3.5 px-4 text-center">Acción</th>
                         </tr>
@@ -1622,19 +1587,9 @@ export default function App() {
           categoria={selectedExtractCat}
           municipio={escaneoAlrededor ? '' : municipio}
           estado={escaneoAlrededor ? '' : estado}
-          circulo={escaneoAlrededor ? { lat: BASE_TRABAJO.lat, lon: BASE_TRABAJO.lon, radioKm } : undefined}
+          circulo={escaneoAlrededor ? { lat: PUNTO_PARTIDA.lat, lon: PUNTO_PARTIDA.lon, radioKm } : undefined}
         />
       )}
-
-      {/* Python Code Modal */}
-      <PythonProjectModal
-        isOpen={isPythonModalOpen}
-        onClose={() => setIsPythonModalOpen(false)}
-        estado={estado}
-        municipio={municipio}
-        radioKm={radioKm}
-        modo={gridMode}
-      />
 
       {/* LFPDPPP Notice Modal */}
       <EthicalNoticeModal

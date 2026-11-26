@@ -190,3 +190,17 @@ export interface ReporteInteligencia {
   };
 }
 
+
+export interface LiveScanProgressUpdate {
+  celda_actual: number;
+  total_celdas: number;
+  porcentaje: number;
+  total_encontrados: number;
+  nuevos_en_celda: number;
+  categorias_detectadas: number;
+  ultima_categoria: string;
+  termino_actual: string;
+  tiempo_transcurrido_seg: number;
+  tiempo_estimado_total_seg: number;
+  mensaje: string;
+}

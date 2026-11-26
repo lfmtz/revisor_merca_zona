@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import { Lead } from '../types';
 import { ResultadoNse, ColoniaNse } from '../services/denueScan';
-import { BASE_TRABAJO, rutaDesdeTrabajo } from '../services/apifyService';
+import { PUNTO_PARTIDA, rutaDesdeTrabajo } from '../services/apifyService';
 
 // Mapa de la zona con 3 vistas claras:
 //  1) Colonias por nivel socioeconómico (círculo por colonia: color = nivel, tamaño = negocios)
@@ -125,13 +125,13 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
     const g = capaBase.current;
     if (!g) return;
     g.clearLayers();
-    const base = L.latLng(BASE_TRABAJO.lat, BASE_TRABAJO.lon);
+    const base = L.latLng(PUNTO_PARTIDA.lat, PUNTO_PARTIDA.lon);
     if (mostrarAnillos) {
       for (const km of [2, 5, 10]) {
         L.circle(base, {
           radius: km * 1000, color: '#7C3AED', weight: 1.5, dashArray: '6 6', fill: false, interactive: false,
         }).addTo(g);
-        const etiqueta = L.latLng(BASE_TRABAJO.lat + km / 111, BASE_TRABAJO.lon);
+        const etiqueta = L.latLng(PUNTO_PARTIDA.lat + km / 111, PUNTO_PARTIDA.lon);
         L.marker(etiqueta, {
           interactive: false,
           icon: L.divIcon({
@@ -149,8 +149,8 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
         html: `<div style="width:30px;height:30px;border-radius:50%;background:#7C3AED;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;font-size:15px">⭐</div>`,
         iconSize: [30, 30], iconAnchor: [15, 15],
       }),
-    }).bindPopup(`<b>Mi trabajo</b><br>${esc(BASE_TRABAJO.direccion)}`).addTo(g);
-  }, [mostrarAnillos]);
+    }).bindPopup(`<b>${esc(PUNTO_PARTIDA.nombre)}</b><br>${esc(PUNTO_PARTIDA.direccion)}`).addTo(g);
+  }, [mostrarAnillos, PUNTO_PARTIDA.lat, PUNTO_PARTIDA.lon]);
 
   // ── Capa de datos según la vista ─────────────────────────
   useEffect(() => {
@@ -342,7 +342,7 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
         </div>
         <label className="flex items-center gap-2 text-xs text-[#E9D5FF] cursor-pointer">
           <input type="checkbox" checked={mostrarAnillos} onChange={e => setMostrarAnillos(e.target.checked)} className="accent-purple-500" />
-          Anillos de 2, 5 y 10 km desde mi trabajo
+          Anillos de 2, 5 y 10 km desde el punto de partida
         </label>
         </div>
       </div>
@@ -423,7 +423,7 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
               <p className="flex items-center gap-1.5 mt-0.5"><span className="w-3 h-3 rounded-full bg-[#16A34A] inline-block" /> Negocio (color = nivel de su colonia)</p>
             </>
           )}
-          <p className="flex items-center gap-1.5 mt-1 border-t border-slate-200 pt-1">⭐ Mi trabajo</p>
+          <p className="flex items-center gap-1.5 mt-1 border-t border-slate-200 pt-1">⭐ {PUNTO_PARTIDA.nombre}</p>
         </div>
       </div>
     </div>
