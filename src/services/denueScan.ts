@@ -68,12 +68,15 @@ export async function escanearZonaDenue(
   onProgress?: (p: LiveScanProgressUpdate) => void,
   onLog?: (log: ExtractionLog) => void,
   stopRef?: { current: boolean },
+  opciones: { centro?: { lat: number; lon: number }; etiqueta?: string } = {},
 ): Promise<ResultadoEscaneoReal> {
   const inicio = Date.now();
-  const centro = geocodificarZona(estado, municipio);
+  // Con `centro` se escanea un círculo sin filtrar por municipio ni estado (p. ej. alrededor de mi trabajo)
+  const centro = opciones.centro || geocodificarZona(estado, municipio);
+  if (opciones.centro) { municipio = ''; estado = ''; }
   const celdas = generarCuadricula(centro.lat, centro.lon, radioKm, modo);
   const lado = MODOS_CUADRICULA[modo].paso_km;
-  const ubicacion = municipio.trim() ? `${municipio.trim()}, ${estado}` : estado;
+  const ubicacion = opciones.etiqueta || (municipio.trim() ? `${municipio.trim()}, ${estado}` : estado);
 
   const log = (message: string, type: ExtractionLog['type'] = 'info') => onLog?.({
     id: `log_${Date.now()}_${Math.random()}`,
@@ -215,8 +218,8 @@ export async function escanearZonaDenue(
       categoria: n.clase,
       tipo_entidad: /^(11|31|51|101|251)/.test(n.estrato) ? 'empresa' : 'negocio',
       direccion_completa: dir,
-      municipio_detectado: municipio || '',
-      estado_detectado: estado,
+      municipio_detectado: municipio || (String(n.ubicacion || '').split(',')[1] || '').trim(),
+      estado_detectado: estado || titulo((String(n.ubicacion || '').split(',')[2] || '').trim()),
       telefono: n.telefono || 'N/A',
       url_google_maps: `https://www.google.com/maps/search/?api=1&query=${n.lat},${n.lon}`,
       sitio_web: n.web || 'N/A',

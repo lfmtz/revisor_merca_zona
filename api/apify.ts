@@ -96,13 +96,19 @@ export default async function handler(req: Req, res: Res) {
       const ubicacion = limpiarTexto(body.ubicacion, 160);
       const max = Math.min(MAX_POR_BUSQUEDA, Math.max(1, Number(body.maxResultados) || 100));
 
-      if (!busquedas.length || !ubicacion) {
+      const c = body.circulo;
+      const circulo = c && Number.isFinite(+c.lat) && Number.isFinite(+c.lon) && Number.isFinite(+c.radioKm)
+        ? { lat: +c.lat, lon: +c.lon, radioKm: Math.min(30, Math.max(0.5, +c.radioKm)) }
+        : null;
+      if (!busquedas.length || (!ubicacion && !circulo)) {
         return res.status(400).json({ error: 'Faltan la categoría o la ubicación.' });
       }
 
       const input = {
         searchStringsArray: busquedas,
-        locationQuery: ubicacion,
+        ...(circulo
+          ? { customGeolocation: { type: 'Point', coordinates: [circulo.lon, circulo.lat], radiusKm: circulo.radioKm } }
+          : { locationQuery: ubicacion }),
         maxCrawledPlacesPerSearch: max,
         language: 'es',
         countryCode: 'mx',

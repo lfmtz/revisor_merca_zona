@@ -100,10 +100,14 @@ export async function extraerConApify(
   opciones: {
     correos?: boolean;
     soloMunicipio?: boolean;
+    /** Buscar en un círculo (p. ej. alrededor de mi trabajo) en lugar de por municipio */
+    circulo?: { lat: number; lon: number; radioKm: number };
     onProgreso?: (estado: string, segundos: number) => void;
   } = {}
 ): Promise<ApifyExtractionResult> {
-  const zonaStr = municipio && municipio.trim() ? `${municipio.trim()}, ${estado}` : estado;
+  const zonaStr = opciones.circulo
+    ? `${opciones.circulo.radioKm} km alrededor de mi trabajo`
+    : (municipio && municipio.trim() ? `${municipio.trim()}, ${estado}` : estado);
   const busquedas = [cat1.trim()];
   if (cat2 && cat2.trim() && cat2.trim().toLowerCase() !== cat1.trim().toLowerCase()) {
     busquedas.push(cat2.trim());
@@ -115,7 +119,7 @@ export async function extraerConApify(
   // 1) Arrancar la extracción en el servidor
   const inicio = await llamarApi('/api/apify', {
     method: 'POST',
-    body: JSON.stringify({ busquedas, ubicacion, maxResultados, correos }),
+    body: JSON.stringify({ busquedas, ubicacion, maxResultados, correos, circulo: opciones.circulo }),
   });
   const runId: string = inicio.runId;
   if (!runId) throw new Error('Apify no devolvió el identificador de la extracción.');
@@ -139,7 +143,7 @@ export async function extraerConApify(
   }
 
   // 3) Normalizar, filtrar por municipio y deduplicar
-  const soloMunicipio = (opciones.soloMunicipio ?? true) && !!municipio.trim();
+  const soloMunicipio = (opciones.soloMunicipio ?? true) && !!municipio.trim() && !opciones.circulo;
   const munNorm = normalizarTexto(municipio);
   // "ecatepec de morelos" también acepta "ecatepec"; "naucalpan de juarez" → "naucalpan"
   const munCorto = munNorm.split(' de ')[0];

@@ -49,6 +49,7 @@ import {
 } from './utils/dataProcessor';
 import { ESTADOS_MEXICO, ESTADOS_DATA } from './data/mexico_geo';
 import { escanearZonaDenue, ResultadoNse } from './services/denueScan';
+import { BASE_TRABAJO } from './services/apifyService';
 import { NseZonaPanel } from './components/NseZonaPanel';
 import { SaldoApifyBadge } from './components/SaldoApifyBadge';
 import { MapaZona } from './components/MapaZona';
@@ -98,6 +99,10 @@ export default function App() {
   const [baseEstado, setBaseEstado] = useState<string>('Ciudad de México');
   const [baseMunicipio, setBaseMunicipio] = useState<string>('Iztacalco');
   const [radioKm, setRadioKm] = useState<number>(8);
+  // Escanear un círculo alrededor de mi trabajo (sin limitarse a un municipio/estado)
+  const [alrededorTrabajo, setAlrededorTrabajo] = useState<boolean>(true);
+  // Lo que se usó en el último escaneo (para mapa, Apify y reportes)
+  const [escaneoAlrededor, setEscaneoAlrededor] = useState<boolean>(false);
   const [gridMode, setGridMode] = useState<GridMode>('estandar');
 
   // Scraper Settings
@@ -153,8 +158,9 @@ export default function App() {
 
   // Geocoding and Grid Calculations
   const geoCenter = useMemo(() => {
+    if (alrededorTrabajo) return { lat: BASE_TRABAJO.lat, lon: BASE_TRABAJO.lon, radio_km: radioKm };
     return geocodificarZona(estado, municipio);
-  }, [estado, municipio]);
+  }, [estado, municipio, alrededorTrabajo, radioKm]);
 
   const baseGeo = useMemo(() => {
     return geocodificarZona(baseEstado || estado, baseMunicipio);
@@ -231,8 +237,12 @@ export default function App() {
         (log) => {
           setLogs(prev => [...prev, log]);
         },
-        stopRef.current
+        stopRef.current,
+        alrededorTrabajo
+          ? { centro: { lat: BASE_TRABAJO.lat, lon: BASE_TRABAJO.lon }, etiqueta: `${radioKm} km alrededor de mi trabajo` }
+          : {}
       );
+      setEscaneoAlrededor(alrededorTrabajo);
 
       setZoneResult(real.zona);
       setNseResult(real.nse);
@@ -473,7 +483,28 @@ export default function App() {
                     </h3>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <label
+                    htmlFor="chk-alrededor-trabajo"
+                    className={`flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition ${alrededorTrabajo
+                      ? 'border-[#C084FC] bg-purple-900/30' : 'border-[#3B1F6E]/60 bg-[#0A0713]'}`}
+                  >
+                    <input
+                      id="chk-alrededor-trabajo"
+                      type="checkbox"
+                      checked={alrededorTrabajo}
+                      onChange={(e) => setAlrededorTrabajo(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 accent-purple-500"
+                    />
+                    <span className="text-xs">
+                      <b className="text-white text-sm">📍 Alrededor de mi trabajo</b>
+                      <span className="block text-[#E9D5FF]/70 mt-0.5">
+                        Escanea {radioKm} km a la redonda desde {BASE_TRABAJO.direccion}, sin importar municipio ni estado
+                        (incluye Iztacalco, Neza, Iztapalapa, etc.). Desmárcalo para escanear un municipio específico.
+                      </span>
+                    </span>
+                  </label>
+
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${alrededorTrabajo ? 'opacity-40 pointer-events-none' : ''}`}>
                     {/* Estado */}
                     <div>
                       <label className="block text-xs font-bold uppercase tracking-wider text-[#C084FC] mb-2">
@@ -1589,8 +1620,9 @@ export default function App() {
           isOpen={true}
           onClose={() => setSelectedExtractCat(null)}
           categoria={selectedExtractCat}
-          municipio={municipio}
-          estado={estado}
+          municipio={escaneoAlrededor ? '' : municipio}
+          estado={escaneoAlrededor ? '' : estado}
+          circulo={escaneoAlrededor ? { lat: BASE_TRABAJO.lat, lon: BASE_TRABAJO.lon, radioKm } : undefined}
         />
       )}
 

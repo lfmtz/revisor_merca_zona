@@ -46,6 +46,8 @@ interface ApifyExtractorModalProps {
   estado: string;
   baseLat?: number;
   baseLon?: number;
+  /** Si viene, se busca en este círculo (alrededor de mi trabajo) y no por municipio */
+  circulo?: { lat: number; lon: number; radioKm: number };
 }
 
 
@@ -56,7 +58,8 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   municipio,
   estado,
   baseLat = BASE_TRABAJO.lat,
-  baseLon = BASE_TRABAJO.lon
+  baseLon = BASE_TRABAJO.lon,
+  circulo
 }) => {
   // MEJORA 1: 2 Categorías simultáneas
   const [cat1, setCat1] = useState<string>(categoria || '');
@@ -87,7 +90,9 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   const costoMaximo = Number((maxResultados * (cat2.trim() ? 2 : 1) * (buscarCorreos ? 0.006 : 0.004)).toFixed(2));
   const saldoInsuficiente = !!saldo && costoMaximo > saldo.disponibleUsd;
 
-  const ubicacion = municipio ? `${municipio}, ${estado}` : estado;
+  const ubicacion = circulo
+    ? `${circulo.radioKm} km alrededor de mi trabajo`
+    : (municipio ? `${municipio}, ${estado}` : estado);
 
   useEffect(() => {
     if (categoria) {
@@ -113,6 +118,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
       const res = await extraerConApify(c1, c2, municipio, estado, baseLat, baseLon, maxResultados, {
         correos: buscarCorreos,
         soloMunicipio,
+        circulo,
         onProgreso: (st, seg) => setProgreso(
           st === 'SUCCEEDED' ? 'Descargando resultados...' : `Apify trabajando (${st}) · ${Math.floor(seg / 60)}:${String(seg % 60).padStart(2, '0')} min`
         ),
@@ -350,7 +356,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                 />
                 Buscar correos en los sitios web (más lento, ~USD 6 en vez de ~USD 4 por cada 1,000)
               </label>
-              {municipio && (
+              {municipio && !circulo && (
                 <label className="flex items-center gap-2 text-xs text-[#E9D5FF] cursor-pointer">
                   <input
                     type="checkbox"
