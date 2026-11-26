@@ -16,6 +16,7 @@ export interface ApifyPlaceItem {
   colonia?: string;
   distancia_km?: number;
   calificacion: number;
+  num_resenas?: number;
   lat?: number;
   lon?: number;
   link_gps: string; // MEJORA 4: Link GPS en cada registro
@@ -215,7 +216,8 @@ export async function extraerConApify(
       lat,
       lon,
       link_gps: rutaDesdeTrabajo(lat, lon, item.placeId, `${nombre} ${dir}`),
-      url_maps: item.url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nombre + ' ' + dir)}`
+      url_maps: item.url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nombre + ' ' + dir)}`,
+      num_resenas: typeof item.reviewsCount === 'number' ? item.reviewsCount : 0
     });
   }
 
@@ -274,6 +276,8 @@ export function descargarCsvCampanaEmail(items: ApifyPlaceItem[], filename: stri
     `"${(it.categoria || '').replace(/"/g, '""')}"`,
     `"${(it.email || '').replace(/"/g, '""')}"`,
     `"${(it.telefono || '').replace(/"/g, '""')}"`,
+    `"${(it.web || '').replace(/"/g, '""')}"`,
+    `"${(it.email || '').replace(/"/g, '""')}"`,
     `"${(it.direccion || '').replace(/"/g, '""')}"`,
     `"${it.link_gps}"`,
     `"${(it.web || '').replace(/"/g, '""')}"`,
@@ -296,12 +300,14 @@ export function descargarCsvSenderPlus(items: ApifyPlaceItem[], filename: string
 
 export function descargarCsvRutaVisitas(items: ApifyPlaceItem[], filename: string) {
   // MEJORA 3: TAB 2 — "🚶 Visitar en persona" Columnas: #, Nombre, Categoría, Teléfono, Colonia, Distancia, Link_GPS, Origen
-  const headers = ["#", "Nombre", "Categoría", "Teléfono", "Dirección", "Colonia", "Calificación", "Distancia_KM", "Link_GPS", "Google_Maps", "Origen"];
+  const headers = ["#", "Nombre", "Categoría", "Teléfono", "Web", "Correo", "Dirección", "Colonia", "Calificación", "Distancia_KM", "Link_GPS", "Google_Maps", "Origen"];
   const rows = items.map((it, idx) => [
     idx + 1,
     `"${(it.nombre || '').replace(/"/g, '""')}"`,
     `"${(it.categoria || '').replace(/"/g, '""')}"`,
     `"${(it.telefono || '').replace(/"/g, '""')}"`,
+    `"${(it.web || '').replace(/"/g, '""')}"`,
+    `"${(it.email || '').replace(/"/g, '""')}"`,
     `"${(it.direccion || '').replace(/"/g, '""')}"`,
     `"${(it.colonia || '').replace(/"/g, '""')}"`,
     it.calificacion || '',

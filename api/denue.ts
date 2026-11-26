@@ -101,15 +101,20 @@ export default async function handler(req: any, res: any) {
     try {
       const datos = await consultarDenue(
         `${DENUE_BUSCAR}/${encodeURIComponent(termino)}/${lat.toFixed(6)},${lon.toFixed(6)}/${radio}/${tokenB}`);
-      const items = datos.slice(0, 400).map((x: any) => ({
+      const limite = Math.min(3000, Math.max(50, Math.round(num(req.query.limite) || 400)));
+      const items = datos.slice(0, limite).map((x: any) => ({
         id: String(x.Id || x.CLEE || ''),
         nombre: String(x.Nombre || '').trim() || String(x.Razon_social || '').trim(),
+        razon_social: String(x.Razon_social || '').trim(),
         actividad: String(x.Clase_actividad || '').trim(),
         estrato: String(x.Estrato || '').trim(),
         telefono: String(x.Telefono || '').trim(),
         correo: String(x.Correo_e || '').trim(),
         web: String(x.Sitio_internet || '').trim(),
         direccion: direccionDenue(x),
+        colonia: String(x.Colonia || '').trim(),
+        cp: String(x.CP || '').trim(),
+        ubicacion: String(x.Ubicacion || '').replace(/\s+/g, ' ').trim(),
         lat: num(x.Latitud),
         lon: num(x.Longitud),
       })).filter((x: any) => Number.isFinite(x.lat) && Number.isFinite(x.lon));

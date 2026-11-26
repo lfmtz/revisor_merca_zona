@@ -37,6 +37,11 @@ import {
   PUNTO_PARTIDA
 } from '../services/apifyService';
 import { TerritoryMap } from './TerritoryMap';
+import {
+  obtenerDenueDelGiro, cruzar, aplicarHistorial, descargarConsolidado, ResultadoCruce,
+  claveBusqueda, busquedaPrevia, guardarBusqueda, totalEnHistorial, borrarHistorial,
+} from '../services/cruce';
+import { geocodificarZona } from '../utils/gridEngine';
 
 interface ApifyExtractorModalProps {
   isOpen: boolean;
@@ -66,7 +71,12 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   const [cat2, setCat2] = useState<string>('');
   const [maxResultados, setMaxResultados] = useState<number>(100);
   
-  const [activeTab, setActiveTab] = useState<'email' | 'visita'>('email');
+  const [activeTab, setActiveTab] = useState<'email' | 'visita' | 'consolidada'>('visita');
+  const [cruce, setCruce] = useState<ResultadoCruce | null>(null);
+  const [cruceEstado, setCruceEstado] = useState<string>('');
+  const [historialPorId, setHistorialPorId] = useState<Record<string, string>>({});
+  const [soloNuevos, setSoloNuevos] = useState<boolean>(false);
+  const [filtroFuente, setFiltroFuente] = useState<string>('todas');
   const [loading, setLoading] = useState<boolean>(false);
   const [resultado, setResultado] = useState<ApifyExtractionResult | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -106,6 +116,14 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
     const c2 = (c2ToRun !== undefined ? c2ToRun : cat2).trim();
 
     if (!c1) return;
+    const centroBusq = circulo ? { lat: circulo.lat, lon: circulo.lon } : geocodificarZona(estado, municipio);
+    const radioBusq = circulo ? circulo.radioKm : geocodificarZona(estado, municipio).radio_km;
+    const claveB = claveBusqueda([c1, c2], centroBusq.lat, centroBusq.lon, radioBusq);
+    const previa = busquedaPrevia(claveB);
+    if (previa && !window.confirm(
+      `Ya hiciste esta misma búsqueda (${[c1, c2].filter(Boolean).join(' + ')}) en esta zona el ${previa}.\n` +
+      `Google Maps cambia poco de un día a otro: probablemente te traerá casi los mismos negocios y se volverá a cobrar.\n\n¿Quieres repetirla?`
+    )) return;
     if (saldoInsuficiente && !window.confirm(
       `Esta extracción puede costar hasta USD ${costoMaximo.toFixed(2)} y te quedan USD ${saldo!.disponibleUsd.toFixed(2)} este mes.\n` +
       `Apify se detendrá al llegar al límite y podrías recibir menos resultados. ¿Continuar?`
@@ -124,17 +142,31 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
         ),
       });
       setResultado(res);
+      guardarBusqueda(claveB);
+
+      // Cruce con INEGI (gratis) + historial de descargas
+      setCruce(null);
+      setCruceEstado('Cruzando con INEGI (DENUE)...');
+      let denue: Awaited<ReturnType<typeof obtenerDenueDelGiro>> = [];
+      try {
+        denue = await obtenerDenueDelGiro([c1, c2], centroBusq, radioBusq, circulo ? '' : municipio);
+        setCruceEstado('');
+      } catch (e: any) {
+        setCruceEstado(`No se pudo consultar INEGI para el cruce: ${e?.message || e}. La base consolidada solo trae los datos de Google.`);
+      }
+      const cr = cruzar([...res.conEmail, ...res.sinEmail], denue, [c1, c2]);
+      aplicarHistorial(cr.registros);
+      const mapa: Record<string, string> = {};
+      cr.registros.forEach(r => { mapa[r.clave] = r.historial; });
+      setHistorialPorId(mapa);
+      setCruce(cr);
 
       // Actualizar saldo real (aquí y en el indicador de la barra superior)
       refrescarSaldo();
       avisarSaldoCambiado();
 
       // Si no hay con email, mostrar visitas
-      if (res.conEmail.length === 0 && res.sinEmail.length > 0) {
-        setActiveTab('visita');
-      } else {
-        setActiveTab('email');
-      }
+      setActiveTab('visita');
     } catch (err: any) {
       console.error("Error al extraer con Apify:", err);
       setErrorMsg(err?.message || 'Error desconocido al extraer con Apify.');
@@ -165,8 +197,18 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
   const cleanZone = (municipio || estado).toLowerCase().replace(/[^a-z0-9]/g, '_');
   const cleanCat = (cat1 + (cat2 ? `_${cat2}` : '')).toLowerCase().replace(/[^a-z0-9]/g, '_');
 
+  const esNuevo = (id: string) => (historialPorId[`google:${id}`] || '').startsWith('🆕');
+  const todosPorDistancia = resultado
+    ? [...resultado.conEmail, ...resultado.sinEmail].sort((a, b) => (a.distancia_km ?? 1e9) - (b.distancia_km ?? 1e9))
+    : [];
+  const listaVisita = soloNuevos ? todosPorDistancia.filter(i => esNuevo(i.id)) : todosPorDistancia;
+  const listaEmail = resultado ? (soloNuevos ? resultado.conEmail.filter(i => esNuevo(i.id)) : resultado.conEmail) : [];
+  const listaTabla = activeTab === 'email' ? listaEmail : listaVisita;
+  const registrosConsolidados = (cruce?.registros || []).filter(r =>
+    (!soloNuevos || r.historial.startsWith('🆕')) && (filtroFuente === 'todas' || r.fuente === filtroFuente));
+
   // Convertir items a Lead format para el mapa interactivo
-  const mapLeads = (resultado ? (activeTab === 'email' ? resultado.conEmail : resultado.sinEmail) : []).map((it, idx) => ({
+  const mapLeads = listaTabla.map((it, idx) => ({
     id: it.id || `lead_apify_${idx}`,
     nombre: it.nombre,
     categoria: it.categoria,
@@ -512,7 +554,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-purple-900/50 pb-3">
                   {/* TABS HEADERS */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       id="tab-btn-apify-email"
                       onClick={() => setActiveTab('email')}
@@ -536,7 +578,18 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                       }`}
                     >
                       <MapPin className="w-4 h-4 text-amber-400" />
-                      <span>🚶 Visitar en persona ({sinEmailCount})</span>
+                      <span>🚶 Visitar en persona ({totalRegistros})</span>
+                    </button>
+                    <button
+                      id="tab-btn-apify-consolidada"
+                      onClick={() => setActiveTab('consolidada')}
+                      className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition ${
+                        activeTab === 'consolidada'
+                          ? 'bg-gradient-to-r from-[#6B21A8] to-[#9333EA] text-white shadow-lg shadow-purple-950/60'
+                          : 'bg-[#0D0818] text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      <span>🧩 Base consolidada INEGI + Google ({cruce ? cruce.registros.length : '…'})</span>
                     </button>
                   </div>
 
@@ -546,7 +599,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                       <>
                         <button
                           id="btn-download-csv-email-campana"
-                          onClick={() => descargarCsvCampanaEmail(resultado.conEmail, `apify_${cleanCat}_${cleanZone}_campana_email`)}
+                          onClick={() => descargarCsvCampanaEmail(listaEmail, `apify_${cleanCat}_${cleanZone}_campana_email`)}
                           className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition"
                           title="Descargar CSV con columnas completas para cold email"
                         >
@@ -556,7 +609,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
 
                         <button
                           id="btn-download-csv-senderplus"
-                          onClick={() => descargarCsvSenderPlus(resultado.conEmail, `apify_${cleanCat}_${cleanZone}`)}
+                          onClick={() => descargarCsvSenderPlus(listaEmail, `apify_${cleanCat}_${cleanZone}`)}
                           className="px-3.5 py-2 rounded-xl bg-[#9333EA] hover:bg-[#A855F7] text-white font-bold text-xs flex items-center gap-1.5 shadow transition"
                           title="CSV exclusivo con solo Nombre y Teléfono para SenderPlus"
                         >
@@ -564,11 +617,21 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                           <span>📱 CSV para SenderPlus</span>
                         </button>
                       </>
+                    ) : activeTab === 'consolidada' ? (
+                      <button
+                        id="btn-download-consolidado"
+                        disabled={!cruce}
+                        onClick={() => cruce && descargarConsolidado(registrosConsolidados, `base_consolidada_${cleanCat}_${cleanZone}`)}
+                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs flex items-center gap-1.5 shadow transition"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>📥 Excel consolidado ({registrosConsolidados.length})</span>
+                      </button>
                     ) : (
                       <>
                         <button
                           id="btn-download-csv-ruta-visitas"
-                          onClick={() => descargarCsvRutaVisitas(resultado.sinEmail, `apify_${cleanCat}_${cleanZone}`)}
+                          onClick={() => descargarCsvRutaVisitas(listaVisita, `apify_${cleanCat}_${cleanZone}`)}
                           className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition"
                           title="Descargar ruta de visitas ordenadas por distancia"
                         >
@@ -592,7 +655,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                 </div>
 
                 {/* VISTA MAPA INTERACTIVO (SI SE ACTIVA) */}
-                {showMapModal && (
+                {showMapModal && activeTab !== 'consolidada' && (
                   <div className="bg-[#140E24] border border-purple-800/60 rounded-2xl p-4 shadow-xl space-y-3 animate-fadeIn">
                     <div className="flex items-center justify-between text-xs text-gray-300">
                       <div className="flex items-center gap-2">
@@ -613,7 +676,97 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                   </div>
                 )}
 
+                {/* CONTROLES DE HISTORIAL */}
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <label className="flex items-center gap-2 text-[#E9D5FF] cursor-pointer">
+                    <input type="checkbox" checked={soloNuevos} onChange={e => setSoloNuevos(e.target.checked)} className="accent-purple-500" />
+                    Mostrar y descargar solo los 🆕 nuevos (que no habías bajado antes)
+                  </label>
+                  <span className="text-gray-500">
+                    Historial en este navegador: {totalEnHistorial().toLocaleString('es-MX')} negocios ·{' '}
+                    <button className="underline hover:text-gray-300" onClick={() => {
+                      if (window.confirm('¿Borrar el historial de negocios descargados en este navegador?')) { borrarHistorial(); setHistorialPorId({}); }
+                    }}>borrar</button>
+                  </span>
+                </div>
+
+                {/* BASE CONSOLIDADA INEGI + GOOGLE */}
+                {activeTab === 'consolidada' && (
+                  <div className="space-y-3">
+                    {cruceEstado && <p className="text-xs text-amber-300">{cruceEstado}</p>}
+                    {cruce && (
+                      <>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                          {[
+                            ['todas', `Todas (${cruce.registros.length})`, 'bg-[#1C1433]'],
+                            ['Ambos', `✅ En ambos (${cruce.ambos})`, 'bg-emerald-900/50'],
+                            ['Solo Google', `🆕 Solo Google (${cruce.soloGoogle})`, 'bg-sky-900/40'],
+                            ['Solo INEGI', `🔎 Solo INEGI (${cruce.soloInegi})`, 'bg-amber-900/40'],
+                          ].map(([k, t, bg]) => (
+                            <button key={k} onClick={() => setFiltroFuente(k)}
+                              className={`${bg} rounded-xl px-3 py-2 font-bold text-left border ${filtroFuente === k ? 'border-[#C084FC] text-white' : 'border-transparent text-gray-300'}`}>
+                              {t}
+                            </button>
+                          ))}
+                        </div>
+                        {cruce.posibles > 0 && (
+                          <p className="text-xs text-amber-300">
+                            ⚠️ {cruce.posibles} negocios de Google tienen a menos de 40 m un negocio de INEGI con otro nombre:
+                            pueden ser el mismo. Se listan los dos para que lo confirmes en calle o por teléfono.
+                          </p>
+                        )}
+                        <div className="bg-[#140E24] border border-purple-900/40 rounded-xl overflow-x-auto max-h-[480px]">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-[#1A1033] text-[#E9D5FF] sticky top-0">
+                              <tr>
+                                <th className="py-2.5 px-3">Fuente</th>
+                                <th className="py-2.5 px-3">Nombre</th>
+                                <th className="py-2.5 px-3">Teléfono</th>
+                                <th className="py-2.5 px-3">Dirección</th>
+                                <th className="py-2.5 px-3">Empleados</th>
+                                <th className="py-2.5 px-3">Nota</th>
+                                <th className="py-2.5 px-3 text-amber-400">Dist.</th>
+                                <th className="py-2.5 px-3 text-center">Ruta</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-purple-900/30 text-gray-200">
+                              {registrosConsolidados.map(r => (
+                                <tr key={r.clave} className="hover:bg-white/[0.02]">
+                                  <td className="py-2 px-3 whitespace-nowrap font-bold">
+                                    {r.fuente === 'Ambos' ? <span className="text-emerald-400">✅ Ambos{r.confianza ? ` · ${r.confianza}` : ''}</span>
+                                      : r.fuente === 'Solo Google' ? <span className="text-sky-300">🆕 Google</span>
+                                      : <span className="text-amber-300">🔎 INEGI</span>}
+                                    <span className={`block text-[10px] font-normal ${r.historial.startsWith('🆕') ? 'text-emerald-400' : 'text-gray-500'}`}>{r.historial}</span>
+                                  </td>
+                                  <td className="py-2 px-3 max-w-[220px]">
+                                    <span className="font-bold text-white block truncate" title={r.nombre}>{r.nombre}</span>
+                                    {r.nombre_inegi && r.fuente === 'Ambos' && <span className="text-[10px] text-gray-400 block truncate" title={r.nombre_inegi}>INEGI: {r.nombre_inegi}</span>}
+                                    <span className="text-[10px] text-[#C084FC] block truncate">{r.giro_google || r.actividad_inegi}</span>
+                                  </td>
+                                  <td className="py-2 px-3 font-mono whitespace-nowrap">
+                                    {r.telefono || r.telefono_inegi || <span className="text-gray-600">—</span>}
+                                  </td>
+                                  <td className="py-2 px-3 min-w-[220px] text-gray-300">{r.direccion}</td>
+                                  <td className="py-2 px-3 text-gray-300 whitespace-nowrap">{r.empleados || '—'}</td>
+                                  <td className="py-2 px-3 text-[11px] text-gray-400 min-w-[200px]">{r.nota}</td>
+                                  <td className="py-2 px-3 font-mono text-amber-400 whitespace-nowrap">{r.distancia_km} km</td>
+                                  <td className="py-2 px-3 text-center">
+                                    <a href={r.ruta} target="_blank" rel="noopener noreferrer"
+                                       className="px-2.5 py-1 rounded bg-[#9333EA] hover:bg-[#A855F7] text-white text-[11px] font-bold">🧭 Ir</a>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          {registrosConsolidados.length === 0 && <p className="text-center py-8 text-gray-400 text-xs">Sin registros para este filtro.</p>}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
                 {/* TABLA DE RESULTADOS CON TODAS LAS COLUMNAS REQUERIDAS */}
+                {activeTab !== 'consolidada' && (
                 <div className="bg-[#140E24] border border-purple-900/40 rounded-xl overflow-hidden shadow">
                   <div className="overflow-x-auto max-h-[480px]">
                     <table className="w-full text-left text-xs border-collapse">
@@ -636,6 +789,8 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                             <th className="py-2.5 px-3 font-bold">Categoría</th>
                             <th className="py-2.5 px-3 font-bold">Teléfono</th>
                             <th className="py-2.5 px-3 font-bold">Dirección</th>
+                            <th className="py-2.5 px-3 font-bold">Web</th>
+                            <th className="py-2.5 px-3 font-bold">Correo</th>
                             <th className="py-2.5 px-3 font-bold text-amber-400">Distancia</th>
                             <th className="py-2.5 px-3 font-bold text-center">Link GPS</th>
                             <th className="py-2.5 px-3 font-bold text-purple-300">Origen</th>
@@ -643,7 +798,7 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                         )}
                       </thead>
                       <tbody className="divide-y divide-purple-900/30 text-gray-200">
-                        {(activeTab === 'email' ? resultado.conEmail : resultado.sinEmail).map((item, idx) => (
+                        {listaTabla.map((item, idx) => (
                           <tr key={item.id} className="hover:bg-purple-950/30 transition">
                             {activeTab === 'email' ? (
                               <>
@@ -710,8 +865,13 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                                 <td className="py-2.5 px-2.5 text-center font-mono text-gray-400">
                                   {idx + 1}
                                 </td>
-                                <td className="py-2.5 px-3 font-bold text-white max-w-[200px] truncate" title={item.nombre}>
-                                  {item.nombre}
+                                <td className="py-2.5 px-3 font-bold text-white max-w-[220px]" title={item.nombre}>
+                                  <span className="block truncate">{item.nombre}</span>
+                                  {historialPorId[`google:${item.id}`] && (
+                                    <span className={`text-[10px] font-semibold ${esNuevo(item.id) ? 'text-emerald-400' : 'text-gray-500'}`}>
+                                      {historialPorId[`google:${item.id}`]}
+                                    </span>
+                                  )}
                                 </td>
                                 <td className="py-2.5 px-3 text-[#C084FC]">
                                   {item.categoria}
@@ -721,6 +881,16 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                                 </td>
                                 <td className="py-2.5 px-3 text-gray-300 min-w-[240px]">
                                   {item.direccion}
+                                </td>
+                                <td className="py-2.5 px-3">
+                                  {item.web ? (
+                                    <a href={item.web} target="_blank" rel="noopener noreferrer" className="text-sky-300 underline" title={item.web}>
+                                      {item.web.replace(/^https?:\/\/(www\.)?/, '').slice(0, 22)}
+                                    </a>
+                                  ) : <span className="text-gray-600">—</span>}
+                                </td>
+                                <td className="py-2.5 px-3">
+                                  {item.email ? <span className="text-emerald-300">{item.email}</span> : <span className="text-gray-600">—</span>}
                                 </td>
                                 <td className="py-2.5 px-3 font-mono font-bold text-amber-400 whitespace-nowrap">
                                   {item.distancia_km ?? "—"} km
@@ -750,12 +920,13 @@ export const ApifyExtractorModal: React.FC<ApifyExtractorModalProps> = ({
                     </table>
                   </div>
 
-                  {((activeTab === 'email' ? resultado.conEmail : resultado.sinEmail).length === 0) && (
+                  {listaTabla.length === 0 && (
                     <div className="text-center py-10 text-gray-400 text-xs">
                       No se encontraron registros en esta categoría para este criterio.
                     </div>
                   )}
                 </div>
+                )}
               </div>
             </>
           )}
