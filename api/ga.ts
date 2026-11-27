@@ -91,6 +91,11 @@ function normalizarClavePrivada(raw: string): string {
     try { k = String(JSON.parse(k).private_key || ''); } catch { /* se sigue con el texto */ }
   }
   k = k.replace(/^["']+|["',]+$/g, '').trim();
+  // También se acepta la clave (o el JSON completo) codificada en base64.
+  if (!/BEGIN/.test(k) && /^[A-Za-z0-9+/=\s]{200,}$/.test(k)) {
+    const dec = Buffer.from(k.replace(/\s/g, ''), 'base64').toString('utf8');
+    if (/BEGIN/.test(dec)) return normalizarClavePrivada(dec);
+  }
   k = k.replace(/\\r\\n|\\n|\\r/g, '\n').replace(/\r\n?/g, '\n');
   const m = k.match(/-----BEGIN ([A-Z ]*PRIVATE KEY)-----([\s\S]*?)-----END \1-----/);
   if (!m) {
