@@ -101,6 +101,7 @@ export async function escanearZonaDenue(
     const c = celdas[i];
     const qs = new URLSearchParams({
       lat: String(c.lat), lon: String(c.lon), lado_km: String(lado),
+      clat: String(centro.lat), clon: String(centro.lon), rkm: String(radioKm),
       municipio: municipio.trim(), estado,
     });
     let d: any = null;

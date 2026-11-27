@@ -128,6 +128,10 @@ export default async function handler(req: any, res: any) {
   if (!Number.isFinite(lat) || !Number.isFinite(lon) || lat < 14 || lat > 33 || lon < -119 || lon > -86) {
     return res.status(400).json({ error: 'Coordenadas inválidas.' });
   }
+  // Círculo del escaneo: se descartan negocios fuera del radio pedido (los cuadros de la orilla se salen)
+  const cLat = num(req.query.clat), cLon = num(req.query.clon), cRadio = num(req.query.rkm);
+  const filtrarCirculo = Number.isFinite(cLat) && Number.isFinite(cLon) && Number.isFinite(cRadio) && cRadio > 0;
+  const kmLat = 111, kmLon = 111 * Math.cos(((Number.isFinite(cLat) ? cLat : 19.4) * Math.PI) / 180);
   const municipio = normalizarTexto(String(req.query.municipio || '')).slice(0, 80);
   const estado = normalizarTexto(String(req.query.estado || '')).slice(0, 60);
   const munCorto = municipio.split(' de ')[0];
@@ -158,6 +162,7 @@ export default async function handler(req: any, res: any) {
     const la = num(x.Latitud), lo = num(x.Longitud);
     if (!Number.isFinite(la) || !Number.isFinite(lo)) continue;
     if (Math.abs(la - lat) > medioLat || Math.abs(lo - lon) > medioLon) continue;
+    if (filtrarCirculo && Math.hypot((la - cLat) * kmLat, (lo - cLon) * kmLon) > cRadio) continue;
 
     const ubic = normalizarTexto(x.Ubicacion || '');
     if (nombresMun.length && !nombresMun.some(n => ubic.includes(n))) continue;

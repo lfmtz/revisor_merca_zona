@@ -166,26 +166,29 @@ export function generarCuadricula(
   const radioLat = radioKm / kmLat;
   const radioLon = radioKm / kmLon;
 
+  // Cuadrícula de cuadros de lado `pasoKm` centrada en el punto. Se incluye todo cuadro que
+  // toque el círculo del radio (antes se exigía que su CENTRO quedara dentro, y con radios
+  // chicos quedaba una sola celda que no cubría todo el círculo).
   const celdas: GridCell[] = [];
-  let lat = latCenter - radioLat;
-
-  while (lat <= latCenter + radioLat + 0.0001) {
-    let lon = lonCenter - radioLon;
-    while (lon <= lonCenter + radioLon + 0.0001) {
-      const dist = distanciaKm(latCenter, lonCenter, lat, lon);
-      if (dist <= radioKm) {
-        celdas.push({
-          lat: Number(lat.toFixed(6)),
-          lon: Number(lon.toFixed(6)),
-          zoom: radioAZoom(radioCelda),
-          radio_celda_km: radioCelda,
-          dist_al_centro_km: Number(dist.toFixed(2))
-        });
-      }
-      lon += pasoLon;
+  const n = Math.ceil(radioKm / pasoKm + 0.5);
+  for (let i = -n; i <= n; i++) {
+    for (let j = -n; j <= n; j++) {
+      const yKm = i * pasoKm, xKm = j * pasoKm;
+      const dy = Math.max(0, Math.abs(yKm) - pasoKm / 2);
+      const dx = Math.max(0, Math.abs(xKm) - pasoKm / 2);
+      if (Math.sqrt(dx * dx + dy * dy) > radioKm) continue;
+      const lat = latCenter + i * pasoLat;
+      const lon = lonCenter + j * pasoLon;
+      celdas.push({
+        lat: Number(lat.toFixed(6)),
+        lon: Number(lon.toFixed(6)),
+        zoom: radioAZoom(radioCelda),
+        radio_celda_km: radioCelda,
+        dist_al_centro_km: Number(Math.sqrt(xKm * xKm + yKm * yKm).toFixed(2)),
+      });
     }
-    lat += pasoLat;
   }
+  void radioLat; void radioLon;
 
   // Garantizar al menos 1 celda central si el radio es muy pequeño
   if (celdas.length === 0) {
