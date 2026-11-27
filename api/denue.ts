@@ -26,12 +26,28 @@ const PUNTOS_POR_CELDA = 250;
 export const PASO_DENSIDAD = 0.0025;
 
 async function consultarDenue(url: string): Promise<any[]> {
-  const r = await fetch(url, { headers: { Accept: 'application/json' } });
-  if (!r.ok) throw new Error(`El DENUE respondió ${r.status}.`);
-  // El DENUE a veces responde el arreglo como texto JSON "doble"; se aceptan ambos.
-  let parsed: unknown = JSON.parse((await r.text()).replace(/^\uFEFF/, '').trim() || '[]');
-  if (typeof parsed === 'string') parsed = JSON.parse(parsed);
-  return Array.isArray(parsed) ? parsed : [];
+  // El DENUE a veces falla o limita por momentos: se reintenta con pausa antes de rendirse.
+  let ultimo = '';
+  for (let intento = 0; intento < 3; intento++) {
+    if (intento) await new Promise(r => setTimeout(r, 1500 * intento));
+    try {
+      const r = await fetch(url, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) });
+      if (!r.ok) {
+        ultimo = `El DENUE respondió ${r.status}.`;
+        if (r.status === 429 || r.status >= 500) continue;
+        throw new Error(ultimo);
+      }
+      // El DENUE a veces responde el arreglo como texto JSON "doble"; se aceptan ambos.
+      let parsed: unknown = JSON.parse((await r.text()).replace(/^\uFEFF/, '').trim() || '[]');
+      if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e: any) {
+      if (/respondió 4\d\d/.test(e?.message || '') && !/429/.test(e.message)) throw e;
+      ultimo = e?.name === 'TimeoutError' ? 'El DENUE tardó demasiado en responder.'
+        : (e?.message || String(e)) + (e?.cause?.code ? ` (${e.cause.code})` : '');
+    }
+  }
+  throw new Error(ultimo || 'Sin respuesta del DENUE.');
 }
 
 const TIPOS_VIALIDAD = /^(avenida|av\.?|calle|calzada|calz\.?|boulevard|blvd\.?|privada|cerrada|andador|prolongacion|eje|circuito|retorno|callejon|carretera|camino|periferico|viaducto)\b/;
