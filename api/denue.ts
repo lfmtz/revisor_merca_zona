@@ -38,7 +38,10 @@ async function consultarDenue(url: string): Promise<any[]> {
         throw new Error(ultimo);
       }
       // El DENUE a veces responde el arreglo como texto JSON "doble"; se aceptan ambos.
-      let parsed: unknown = JSON.parse((await r.text()).replace(/^\uFEFF/, '').trim() || '[]');
+      const texto = (await r.text()).replace(/^\uFEFF/, '').trim();
+      // Zonas sin negocios (lagos, parques, aeropuerto): el DENUE responde el texto "No hay resultados."
+      if (!texto || /^"?\s*no hay resultados/i.test(texto)) return [];
+      let parsed: unknown = JSON.parse(texto);
       if (typeof parsed === 'string') parsed = JSON.parse(parsed);
       return Array.isArray(parsed) ? parsed : [];
     } catch (e: any) {
