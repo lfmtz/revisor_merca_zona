@@ -4,6 +4,7 @@
 
 import { CategorySummary } from '../types';
 import { ResultadoNse, ColoniaNse } from '../services/denueScan';
+import type { PerfilHogares } from '../services/censo';
 
 function norm(t: string): string {
   return (t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -150,10 +151,26 @@ export function lugarDeZona(zona: string, direccionPunto: string): { lugar: stri
   return { lugar: colonia ? `${colonia}, ${municipio}` : municipio, municipio };
 }
 
+/** Rango de edad del comprador según la pirámide de la zona (Censo 2020). */
+function edadCompradores(h: PerfilHogares | null | undefined, porDefecto: string): string {
+  if (!h || !h.poblacion) return porDefecto;
+  const { p18_24, p25_59, p60 } = h.edades;
+  const adultos = p18_24 + p25_59 + p60 || 1;
+  if (p18_24 / adultos >= 0.2) return '22 a 45 años';
+  if (p60 / adultos >= 0.3) return '35 a 60 años';
+  return '28 a 50 años';
+}
+
 export function generarPersonas(
   segmentos: ConteoSegmento[], nse: ResultadoNse, zona: string, direccionPunto = '',
+  hogares?: PerfilHogares | null,
 ): BuyerPersona[] {
-  const grupo = nivelGrupo(nse.nivel.nivel);
+  // Con datos del censo, el perfil de particulares usa el nivel de HOGARES; si no, el de negocios
+  const grupo = nivelGrupo(hogares?.nivel && hogares.nivel !== '—' ? hogares.nivel : nse.nivel.nivel);
+  const nivelTxt = hogares?.nivel && hogares.nivel !== '—' ? hogares.nivel : nse.nivel.nivel;
+  const datoAuto = hogares?.pctAuto != null
+    ? ` En la zona ${hogares.pctAuto}% de los hogares tiene auto: ~${hogares.viviendasSinAuto.toLocaleString('es-MX')} viviendas no tienen.`
+    : '';
   const { lugar, municipio } = lugarDeZona(zona, direccionPunto);
   const mun = municipio.toLowerCase();
   const personas: BuyerPersona[] = [];
@@ -187,7 +204,7 @@ export function generarPersonas(
   // Persona PARTICULAR según nivel socioeconómico
   const particular: BuyerPersona = grupo === 'alto' ? {
     titulo: 'Profesionista que renueva su auto', emoji: '👔', tipo: 'Particular',
-    quien: `Vive o trabaja en la zona de ${lugar}, de nivel ${nse.nivel.nivel}. Ya tiene auto y busca cambiarlo por uno más nuevo, seguro o espacioso.`,
+    quien: `Vive o trabaja en la zona de ${lugar}, de nivel ${nivelTxt}. Ya tiene auto y busca cambiarlo por uno más nuevo, seguro o espacioso.${datoAuto}`,
     edad: '30 a 50 años',
     necesita: 'Comodidad, tecnología y seguridad para la familia o el trabajo.',
     vehiculos: 'Jeep Compass/Commander, Peugeot 2008/3008, RAM 1500',
@@ -199,7 +216,7 @@ export function generarPersonas(
     peso: 0,
   } : grupo === 'medio' ? {
     titulo: 'Familia que compra auto nuevo', emoji: '👨‍👩‍👧', tipo: 'Particular',
-    quien: `Familia de la zona de ${lugar} (nivel ${nse.nivel.nivel}) con ingreso estable; busca auto nuevo confiable o cambiar un usado.`,
+    quien: `Familia de la zona de ${lugar} (nivel ${nivelTxt}) con ingreso estable; busca auto nuevo confiable o cambiar un usado.${datoAuto}`,
     edad: '28 a 45 años',
     necesita: 'Auto rendidor y seguro, mensualidad que no apriete.',
     vehiculos: 'Fiat Pulse, Peugeot 208, Fiat Mobi; seminuevos certificados',
@@ -211,7 +228,7 @@ export function generarPersonas(
     peso: 0,
   } : {
     titulo: 'Trabajador(a) que busca su primer auto', emoji: '🧑‍🔧', tipo: 'Particular',
-    quien: `Vive en la zona de ${lugar} (nivel ${nse.nivel.nivel}); se mueve en transporte público o moto y quiere su primer auto, o uno para trabajar en plataforma.`,
+    quien: `Vive en la zona de ${lugar} (nivel ${nivelTxt}); se mueve en transporte público o moto y quiere su primer auto, o uno para trabajar en plataforma.${datoAuto}`,
     edad: '23 a 40 años',
     necesita: 'Movilidad propia y, muchas veces, generar ingreso (apps de transporte o reparto).',
     vehiculos: 'Fiat Mobi, Dodge Attitude, seminuevos económicos',
@@ -222,6 +239,7 @@ export function generarPersonas(
     palabrasClave: [`primer auto a crédito ${mun}`, 'auto sin historial crediticio', 'auto para uber a crédito', 'auto con enganche bajo'],
     peso: 0,
   };
+  particular.edad = edadCompradores(hogares, particular.edad);
   personas.push(particular);
   return personas;
 }
@@ -260,6 +278,7 @@ export function codigosPostales(colonias: ColoniaNse[], niveles?: Set<string>): 
 export function briefTexto(
   zona: string, punto: { lat: number; lon: number; direccion: string }, radioKm: number,
   nse: ResultadoNse, segmentos: ConteoSegmento[], personas: BuyerPersona[], cps: CpRecomendado[],
+  hogares?: PerfilHogares | null,
 ): string {
   const L: string[] = [];
   L.push(`BRIEF DE PAUTA — ${zona}`);
@@ -269,6 +288,14 @@ export function briefTexto(
   L.push(`Centro: ${punto.direccion} (${punto.lat.toFixed(5)}, ${punto.lon.toFixed(5)}) · Radio: ${radioKm} km`);
   L.push(`Nivel socioeconómico estimado: ${nse.nivel.nivel} (${nse.nivel.descripcion}, índice ${nse.indice ?? '—'}/100)`);
   L.push(`Negocios registrados: ${nse.indicadores.total.toLocaleString('es-MX')}`);
+  if (hogares && hogares.poblacion) {
+    L.push('');
+    L.push('QUIÉN VIVE AQUÍ (Censo 2020, INEGI)');
+    L.push(`Población: ${hogares.poblacion.toLocaleString('es-MX')} · Viviendas: ${hogares.viviendas.toLocaleString('es-MX')} · NSE de hogares estimado: ${hogares.nivel}`);
+    L.push(`Edades: 0–14 ${hogares.edades.p0_14}% · 18–24 ${hogares.edades.p18_24}% · 25–59 ${hogares.edades.p25_59}% · 60+ ${hogares.edades.p60}%`);
+    L.push(`Escolaridad promedio: ${hogares.escolaridad ?? '—'} años · Con seguridad social: ${hogares.pctSegSocial ?? '—'}%`);
+    L.push(`Hogares con auto: ${hogares.pctAuto ?? '—'}% (≈${hogares.viviendasSinAuto.toLocaleString('es-MX')} sin auto) · con moto: ${hogares.pctMoto ?? '—'}% · internet: ${hogares.pctInternet ?? '—'}% · computadora: ${hogares.pctPc ?? '—'}%`);
+  }
   L.push('');
   L.push('2. SEGMENTOS DE NEGOCIO (necesidad de vehículo)');
   segmentos.forEach(s => L.push(`- ${s.def.nombre}: ${s.negocios.toLocaleString('es-MX')} (${s.pct}%) → ${s.def.vehiculo} · ${s.def.modelos}`));

@@ -1097,7 +1097,7 @@ export default function App() {
             {/* SUB-VIEW 1: TABLA DE CATEGORÍAS REALES CON BOTÓN QUERY APIFY   */}
             {/* ───────────────────────────────────────────────────────────── */}
             {activeResultsTab === 'buyer' && nseResult && (
-              <PanelBuyer zona={zoneResult.coverage} radioKm={radioEscaneo} categorias={zoneResult.categorias} nse={nseResult} />
+              <PanelBuyer zona={zoneResult.coverage} radioKm={radioEscaneo} categorias={zoneResult.categorias} nse={nseResult} municipio={escaneoAlrededor ? '' : municipio} />
             )}
             {activeResultsTab === 'buyer' && !nseResult && (
               <div className="bg-[#140E24] border border-purple-900/40 rounded-2xl p-6 text-sm text-gray-300">
@@ -1221,7 +1221,7 @@ export default function App() {
                     </div>
                   </div>
                   {nseResult ? (
-                    <MapaZona nse={nseResult} leads={leadsList} centroLat={geoCenter.lat} centroLon={geoCenter.lon} />
+                    <MapaZona nse={nseResult} leads={leadsList} centroLat={geoCenter.lat} centroLon={geoCenter.lon} radioKm={radioEscaneo} municipio={escaneoAlrededor ? '' : municipio} />
                   ) : (
                     <p className="text-sm text-gray-300">Haz un escaneo nuevo para ver el mapa de la zona.</p>
                   )}

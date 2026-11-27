@@ -3,13 +3,15 @@ import L from 'leaflet';
 import { Lead } from '../types';
 import { ResultadoNse, ColoniaNse } from '../services/denueScan';
 import { PUNTO_PARTIDA, rutaDesdeTrabajo } from '../services/apifyService';
+import { cargarAgebs, perfilZona, Ageb } from '../services/censo';
 
 // Mapa de la zona con 3 vistas claras:
 //  1) Colonias por nivel socioeconómico (círculo por colonia: color = nivel, tamaño = negocios)
 //  2) Mapa de calor real (cuadritos de ~275 m coloreados por concentración de negocios)
 //  3) Negocios agrupados (burbujas con número que se separan al hacer zoom)
 
-type Vista = 'colonias' | 'calor' | 'negocios';
+type Vista = 'colonias' | 'calor' | 'negocios' | 'hogares';
+type VarHogar = 'nivel' | 'sinauto' | 'adultos';
 type CapaCalor = 'total' | 'alto' | 'bajo';
 
 const NIVELES = [
@@ -56,9 +58,14 @@ interface Props {
   leads: Lead[];
   centroLat: number;
   centroLon: number;
+  radioKm?: number;
+  municipio?: string;
 }
 
-export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) => {
+// Escala verde→rojo para porcentajes (0 = bajo, 100 = alto)
+const ESCALA_PCT = ['#DBEAFE', '#93C5FD', '#60A5FA', '#3B82F6', '#1D4ED8', '#1E3A8A'];
+
+export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon, radioKm = 5, municipio = '' }) => {
   const contenedor = useRef<HTMLDivElement>(null);
   const mapa = useRef<L.Map | null>(null);
   const capaDatos = useRef<L.LayerGroup | null>(null);
@@ -70,6 +77,16 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
   const [mostrarAnillos, setMostrarAnillos] = useState(true);
   const [zoom, setZoom] = useState(13);
   const [fondo, setFondo] = useState<Fondo>('claro');
+  const [agebs, setAgebs] = useState<Ageb[] | null>(null);
+  const [censoError, setCensoError] = useState<string | null>(null);
+  const [varHogar, setVarHogar] = useState<VarHogar>('nivel');
+
+  useEffect(() => {
+    if (vista !== 'hogares' || agebs) return;
+    cargarAgebs()
+      .then(t => setAgebs(perfilZona(t, PUNTO_PARTIDA, radioKm, municipio).agebs))
+      .catch(e => setCensoError(e?.message || 'Sin datos del censo'));
+  }, [vista]);
   const capaFondo = useRef<L.LayerGroup | null>(null);
 
   const nivelPorColonia = useMemo(() => {
@@ -232,6 +249,32 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
       });
     }
 
+    if (vista === 'hogares' && agebs) {
+      for (const a of agebs) {
+        let color = SIN_DATOS, etiqueta = '';
+        const adultos = a.pob ? Math.round(100 * (((a.p18_24 || 0) + (a.p25_59 || 0)) / a.pob)) : null;
+        if (varHogar === 'nivel') { color = COLOR_NIVEL[a.nivel] || SIN_DATOS; etiqueta = `NSE hogares ${a.nivel}`; }
+        if (varHogar === 'sinauto' && a.auto != null) {
+          const v = 100 - a.auto;
+          color = ESCALA_PCT[Math.min(5, Math.floor(v / 100 * 6))]; etiqueta = `${v.toFixed(0)}% de hogares sin auto`;
+        }
+        if (varHogar === 'adultos' && adultos != null) {
+          color = ESCALA_PCT[Math.min(5, Math.max(0, Math.floor((adultos - 45) / 25 * 6)))]; etiqueta = `${adultos}% tiene de 18 a 59 años`;
+        }
+        L.circleMarker([a.lat, a.lon], {
+          radius: 4 + Math.min(10, Math.sqrt((a.viv || 0) / 40)), color: '#FFFFFF', weight: 1, fillColor: color, fillOpacity: 0.85,
+        }).bindPopup(`
+          <div style="font-family:Poppins,sans-serif;min-width:200px;font-size:12px;line-height:1.5">
+            <b>AGEB ${esc(a.cvegeo.slice(-4))} · ${esc(a.mun)}</b><br>
+            ${a.pob.toLocaleString('es-MX')} habitantes · ${(a.viv || 0).toLocaleString('es-MX')} viviendas<br>
+            NSE hogares: <b>${a.nivel}</b> · escolaridad ${a.esc ?? '—'} años<br>
+            Con auto: <b>${a.auto ?? '—'}%</b> · moto ${a.moto ?? '—'}% · internet ${a.internet ?? '—'}%<br>
+            18–59 años: ${adultos ?? '—'}% · 60+: ${a.pob && a.p60 != null ? Math.round(100 * a.p60 / a.pob) : '—'}%<br>
+            ${a.distancia_km} km del punto de partida
+          </div>`).bindTooltip(etiqueta, { direction: 'top' }).addTo(g);
+      }
+    }
+
     if (vista === 'negocios') {
       const q = filtroGiro.trim().toLowerCase();
       const visibles = leads.filter(l => {
@@ -294,7 +337,7 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
         }).bindTooltip(`${n} negocios · clic para acercar`, { direction: 'top' }).addTo(g);
       });
     }
-  }, [vista, nivelesActivos, capaCalor, filtroGiro, zoom, nse, leads, nivelPorColonia]);
+  }, [vista, nivelesActivos, capaCalor, filtroGiro, zoom, nse, leads, nivelPorColonia, agebs, varHogar]);
 
   const alternarNivel = (n: string) => {
     setNivelesActivos(prev => {
@@ -330,6 +373,7 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
           {boton('colonias', '🎯 Colonias por nivel')}
           {boton('calor', '🔥 Mapa de calor')}
           {boton('negocios', '📍 Negocios')}
+          {boton('hogares', '🏠 Hogares (Censo)')}
         </div>
         <div className="flex items-center gap-3">
         <div className="flex rounded-lg overflow-hidden border border-purple-800/60 text-[11px] font-bold">
@@ -370,6 +414,17 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
               className="ml-auto bg-[#0A0713] border border-[#6B21A8]/50 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-gray-500 focus:outline-none w-full sm:w-72"
             />
           )}
+        </div>
+      )}
+      {vista === 'hogares' && (
+        <div className="flex flex-wrap items-center gap-2 text-[11px]">
+          <span className="text-gray-400 mr-1">Colorear por:</span>
+          {([['nivel', 'Nivel de los hogares'], ['sinauto', '% hogares sin auto'], ['adultos', '% adultos 18–59']] as const).map(([k, t]) => (
+            <button key={k} onClick={() => setVarHogar(k)}
+              className={`px-2.5 py-1 rounded-lg font-bold ${varHogar === k ? 'bg-[#9333EA] text-white' : 'bg-[#1C1433] text-[#E9D5FF]'}`}>{t}</button>
+          ))}
+          {censoError && <span className="text-amber-300">{censoError}</span>}
+          {!agebs && !censoError && <span className="text-gray-400">Cargando censo…</span>}
         </div>
       )}
       {vista === 'calor' && (
@@ -414,6 +469,26 @@ export const MapaZona: React.FC<Props> = ({ nse, leads, centroLat, centroLon }) 
                 {ESCALA_CALOR.map(c => <span key={c} className="flex-1" style={{ backgroundColor: c }} />)}
               </div>
               <div className="flex justify-between text-slate-500 mt-0.5"><span>Pocos</span><span>Muchos</span></div>
+            </>
+          )}
+          {vista === 'hogares' && (
+            <>
+              <p className="font-bold mb-1">Censo 2020 · un punto por AGEB</p>
+              {varHogar === 'nivel' ? (
+                <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                  {NIVELES.map(n => (
+                    <span key={n.nivel} className="flex items-center gap-1.5">
+                      <span className="w-3 h-3 rounded-full inline-block" style={{ backgroundColor: n.color }} /><b>{n.nivel}</b>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <div className="flex h-2.5 rounded overflow-hidden">{ESCALA_PCT.map(c => <span key={c} className="flex-1" style={{ backgroundColor: c }} />)}</div>
+                  <div className="flex justify-between text-slate-500 mt-0.5"><span>Menos</span><span>Más</span></div>
+                </>
+              )}
+              <p className="mt-1 text-slate-500">Tamaño = número de viviendas</p>
             </>
           )}
           {vista === 'negocios' && (

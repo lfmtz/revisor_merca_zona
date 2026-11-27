@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { cargarAgebs, perfilZona, PerfilHogares } from '../services/censo';
 import { CategorySummary } from '../types';
 import { ResultadoNse } from '../services/denueScan';
 import { PUNTO_PARTIDA } from '../services/apifyService';
@@ -9,6 +10,7 @@ interface Props {
   radioKm: number;
   categorias: CategorySummary[];
   nse: ResultadoNse;
+  municipio?: string;   // si el escaneo fue por municipio
 }
 
 const NIVELES = ['A/B', 'C+', 'C', 'C-', 'D+', 'D/E'];
@@ -21,12 +23,22 @@ function descargar(contenido: string, nombre: string, tipo: string) {
   URL.revokeObjectURL(url);
 }
 
-export const PanelBuyer: React.FC<Props> = ({ zona, radioKm, categorias, nse }) => {
+export const PanelBuyer: React.FC<Props> = ({ zona, radioKm, categorias, nse, municipio = '' }) => {
   const [niveles, setNiveles] = useState<Set<string>>(new Set(NIVELES));
   const [copiado, setCopiado] = useState<string | null>(null);
+  const [hogares, setHogares] = useState<PerfilHogares | null>(null);
+  const [censoError, setCensoError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    cargarAgebs()
+      .then(todos => { if (vivo) setHogares(perfilZona(todos, PUNTO_PARTIDA, radioKm, municipio)); })
+      .catch(e => { if (vivo) setCensoError(e?.message || 'Sin datos del censo.'); });
+    return () => { vivo = false; };
+  }, [radioKm, municipio, zona]);
 
   const segmentos = useMemo(() => contarSegmentos(categorias), [categorias]);
-  const personas = useMemo(() => generarPersonas(segmentos, nse, zona, PUNTO_PARTIDA.direccion), [segmentos, nse, zona]);
+  const personas = useMemo(() => generarPersonas(segmentos, nse, zona, PUNTO_PARTIDA.direccion, hogares), [segmentos, nse, zona, hogares]);
   const cps = useMemo(() => codigosPostales(nse.colonias, niveles), [nse, niveles]);
   const maxSeg = Math.max(1, ...segmentos.map(s => s.negocios));
   const archivo = zona.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '_').slice(0, 50);
@@ -43,7 +55,14 @@ export const PanelBuyer: React.FC<Props> = ({ zona, radioKm, categorias, nse }) 
     return s.size ? s : new Set(NIVELES);
   });
 
-  const brief = () => briefTexto(zona, PUNTO_PARTIDA, radioKm, nse, segmentos, personas, cps);
+  const brief = () => briefTexto(zona, PUNTO_PARTIDA, radioKm, nse, segmentos, personas, cps, hogares);
+  const tieneCenso = !!hogares && hogares.poblacion > 0;
+  const barra = (etq: string, v: number | null, color = '#9333EA') => (
+    <div className="space-y-0.5">
+      <div className="flex justify-between"><span className="text-gray-300">{etq}</span><b className="text-white">{v ?? '—'}%</b></div>
+      <div className="h-2 bg-[#0A0713] rounded-full overflow-hidden"><div className="h-full rounded-full" style={{ width: `${v || 0}%`, backgroundColor: color }} /></div>
+    </div>
+  );
 
   return (
     <div id="view-buyer" className="space-y-5">
@@ -67,6 +86,42 @@ export const PanelBuyer: React.FC<Props> = ({ zona, radioKm, categorias, nse }) 
             {copiado === 'brief' ? '✅ Copiado' : '📋 Copiar brief'}
           </button>
         </div>
+      </div>
+
+      {/* Quién vive aquí (Censo 2020) */}
+      <div id="seccion-censo" className="bg-[#140E24] border border-purple-900/40 rounded-2xl p-5 space-y-3 text-xs">
+        <h4 className="text-sm font-extrabold text-white">👥 ¿Quién vive aquí? <span className="text-gray-400 font-normal">Censo 2020, INEGI</span></h4>
+        {!hogares && !censoError && <p className="text-gray-400">Cargando datos del censo…</p>}
+        {censoError && <p className="text-amber-300">{censoError}</p>}
+        {hogares && !tieneCenso && <p className="text-gray-400">No hay AGEB urbanas del censo en esta zona.</p>}
+        {tieneCenso && hogares && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <p className="text-2xl font-extrabold text-white">{hogares.poblacion.toLocaleString('es-MX')} <span className="text-xs font-normal text-gray-400">habitantes</span></p>
+              <p className="text-gray-300">{hogares.viviendas.toLocaleString('es-MX')} viviendas · {hogares.agebs.length} AGEB</p>
+              <p className="text-gray-300">NSE de hogares estimado: <b className="text-white">{hogares.nivel}</b> (índice {hogares.indice ?? '—'})</p>
+              <p className="text-gray-300">Escolaridad promedio: <b className="text-white">{hogares.escolaridad ?? '—'} años</b></p>
+              <p className="text-gray-300">Con seguridad social: <b className="text-white">{hogares.pctSegSocial ?? '—'}%</b></p>
+            </div>
+            <div className="space-y-2">
+              <p className="font-bold text-[#C084FC]">Edades</p>
+              {barra('0 a 14 años', hogares.edades.p0_14, '#64748B')}
+              {barra('18 a 24 años', hogares.edades.p18_24, '#38BDF8')}
+              {barra('25 a 59 años', hogares.edades.p25_59, '#A855F7')}
+              {barra('60 años o más', hogares.edades.p60, '#F59E0B')}
+            </div>
+            <div className="space-y-2">
+              <p className="font-bold text-[#C084FC]">Hogares (viviendas)</p>
+              {barra('Con auto', hogares.pctAuto, '#22C55E')}
+              {barra('Con moto', hogares.pctMoto, '#14B8A6')}
+              {barra('Con internet', hogares.pctInternet, '#6366F1')}
+              {barra('Con computadora', hogares.pctPc, '#EC4899')}
+              <p className="text-emerald-300 font-bold pt-1">
+                🚗 ≈{hogares.viviendasSinAuto.toLocaleString('es-MX')} hogares sin auto: mercado de primer auto
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Segmentos */}
@@ -193,7 +248,7 @@ export const PanelBuyer: React.FC<Props> = ({ zona, radioKm, categorias, nse }) 
       <p className="text-[11px] text-gray-500">
         ℹ️ Fase 1: perfiles estimados con los negocios del DENUE y el nivel socioeconómico estimado de la zona
         (datos públicos agregados, no datos personales). Los modelos son ejemplos de Stellantis: ajústalos a tu catálogo.
-        En la fase 2 se agregan edades, hogares con auto y escolaridad del Censo 2020 de INEGI.
+        Datos de personas y hogares: Censo de Población y Vivienda 2020 (INEGI), por AGEB urbana.
       </p>
     </div>
   );
