@@ -1003,7 +1003,7 @@ export default function App() {
             </div>
 
             {/* View Selector Tabs */}
-            <div className="flex border-b border-[#3B1F6E] gap-2 overflow-x-auto pb-1">
+            <div className="flex flex-wrap border-b border-[#3B1F6E] gap-2 pb-2">
               <button
                 id="tab-btn-categorias"
                 onClick={() => setActiveResultsTab('categorias')}
