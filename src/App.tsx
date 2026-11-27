@@ -48,6 +48,7 @@ import { SaldoApifyBadge } from './components/SaldoApifyBadge';
 import { MapaZona } from './components/MapaZona';
 import { PanelBuyer } from './components/PanelBuyer';
 import { PlanMeta } from './components/PlanMeta';
+import { ZonasCalientes } from './components/ZonasCalientes';
 import { 
   MapPin, 
   Play, 
@@ -137,7 +138,7 @@ export default function App() {
   const [zoneResult, setZoneResult] = useState<ZoneAnalysisResult | null>(null);
   const [leadsList, setLeadsList] = useState<Lead[]>([]);
   const [nseResult, setNseResult] = useState<ResultadoNse | null>(null);
-  const [activeResultsTab, setActiveResultsTab] = useState<'categorias' | 'nse' | 'buyer' | 'meta' | 'mapa' | 'leads' | 'inteligencia' | 'exportar'>('categorias');
+  const [activeResultsTab, setActiveResultsTab] = useState<'categorias' | 'nse' | 'buyer' | 'meta' | 'calientes' | 'mapa' | 'leads' | 'inteligencia' | 'exportar'>('categorias');
   const [categorySearch, setCategorySearch] = useState<string>('');
   const [leadsSearch, setLeadsSearch] = useState<string>('');
   const [leadsViewMode, setLeadsViewMode] = useState<'tabla' | 'tarjetas'>('tabla');
@@ -1054,6 +1055,18 @@ export default function App() {
               </button>
 
               <button
+                id="tab-btn-calientes"
+                onClick={() => setActiveResultsTab('calientes')}
+                className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition whitespace-nowrap ${
+                  activeResultsTab === 'calientes'
+                    ? 'bg-gradient-to-r from-[#6B21A8] to-[#9333EA] text-white shadow-lg shadow-purple-950/50'
+                    : 'bg-[#140E24] text-[#E9D5FF] hover:bg-[#1E1438]'
+                }`}
+              >
+                <span>🔥 Zonas calientes</span>
+              </button>
+
+              <button
                 id="tab-btn-mapa"
                 onClick={() => setActiveResultsTab('mapa')}
                 className={`px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition whitespace-nowrap ${
@@ -1115,6 +1128,15 @@ export default function App() {
             {activeResultsTab === 'meta' && !nseResult && (
               <div className="bg-[#140E24] border border-purple-900/40 rounded-2xl p-6 text-sm text-gray-300">
                 Haz un escaneo nuevo para armar el plan de pauta.
+              </div>
+            )}
+
+            {activeResultsTab === 'calientes' && nseResult && (
+              <ZonasCalientes zona={zoneResult.coverage} radioKm={radioEscaneo} nse={nseResult} municipio={escaneoAlrededor ? '' : municipio} />
+            )}
+            {activeResultsTab === 'calientes' && !nseResult && (
+              <div className="bg-[#140E24] border border-purple-900/40 rounded-2xl p-6 text-sm text-gray-300">
+                Haz un escaneo nuevo para cruzar el interés de tu landing con la zona.
               </div>
             )}
 
