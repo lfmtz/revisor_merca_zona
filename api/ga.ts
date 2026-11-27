@@ -81,13 +81,33 @@ function base64url(input: string | Buffer): string {
     .replace(/\//g, '_');
 }
 
+/**
+ * Acepta la clave privada como se haya pegado en Vercel: con o sin comillas, con "\\n" literales,
+ * en una sola línea, con saltos de Windows o incluso el JSON completo de la cuenta de servicio.
+ */
+function normalizarClavePrivada(raw: string): string {
+  let k = (raw || '').trim();
+  if (k.startsWith('{')) {
+    try { k = String(JSON.parse(k).private_key || ''); } catch { /* se sigue con el texto */ }
+  }
+  k = k.replace(/^["']+|["',]+$/g, '').trim();
+  k = k.replace(/\\r\\n|\\n|\\r/g, '\n').replace(/\r\n?/g, '\n');
+  const m = k.match(/-----BEGIN ([A-Z ]*PRIVATE KEY)-----([\s\S]*?)-----END \1-----/);
+  if (!m) {
+    throw new Error('La variable GA_PRIVATE_KEY de Vercel no tiene una clave válida: debe incluir "-----BEGIN PRIVATE KEY-----" y "-----END PRIVATE KEY-----".');
+  }
+  const cuerpo = m[2].replace(/[^A-Za-z0-9+/=]/g, '');
+  const lineas = cuerpo.match(/.{1,64}/g) || [];
+  return `-----BEGIN ${m[1]}-----\n${lineas.join('\n')}\n-----END ${m[1]}-----\n`;
+}
+
 async function obtenerAccessToken(clientEmail: string, privateKeyRaw: string): Promise<string> {
   const ahora = Date.now();
   if (tokenCache && tokenCache.exp > ahora + 60_000) {
     return tokenCache.token;
   }
 
-  const privateKey = privateKeyRaw.replace(/\\n/g, '\n');
+  const privateKey = normalizarClavePrivada(privateKeyRaw);
   const iat = Math.floor(ahora / 1000);
   const exp = iat + 3600;
 
