@@ -15,6 +15,7 @@ export interface ColoniaNse {
   colonia: string;
   cp: string;
   total: number;
+  seg: Record<string, number>;   // negocios por segmento de necesidad de vehículo
   indice: number | null;
   nivel: NivelNse;
   lat: number;
@@ -86,7 +87,7 @@ export async function escanearZonaDenue(
   log(`Escaneo REAL con DENUE (INEGI) en ${ubicacion}: ${celdas.length} celdas de ${lado} km.`, 'info');
 
   const categorias: Record<string, [number, number]> = {};
-  const colonias: Record<string, { ind: IndicadoresZona; latS: number; lonS: number; cp: string }> = {};
+  const colonias: Record<string, { ind: IndicadoresZona; latS: number; lonS: number; cp: string; seg: Record<string, number> }> = {};
   let indicadores = indicadoresVacios();
   let conTelefono = 0;
   const puntos: ZoneAnalysisResult['densidad_puntos'] = [];
@@ -127,7 +128,8 @@ export async function escanearZonaDenue(
         ultimaCategoria = k;
       }
       for (const [k, v] of Object.entries<any>(d.colonias || {})) {
-        const col = colonias[k] || (colonias[k] = { ind: indicadoresVacios(), latS: 0, lonS: 0, cp: v.cp });
+        const col = colonias[k] || (colonias[k] = { ind: indicadoresVacios(), latS: 0, lonS: 0, cp: v.cp, seg: {} });
+        for (const [sg, n] of Object.entries<number>(v.seg || {})) col.seg[sg] = (col.seg[sg] || 0) + n;
         col.ind = sumarIndicadores(col.ind, v.ind);
         col.latS += v.lat * v.ind.total;
         col.lonS += v.lon * v.ind.total;
@@ -189,7 +191,7 @@ export async function escanearZonaDenue(
     const indice = calcularIndiceNse(c.ind);
     const lat = c.latS / c.ind.total, lon = c.lonS / c.ind.total;
     return {
-      colonia: titulo(nombre), cp: c.cp, total: c.ind.total, indice,
+      colonia: titulo(nombre), cp: c.cp, total: c.ind.total, seg: c.seg, indice,
       nivel: nivelDesdeIndice(indice), lat, lon,
       distancia_km: distanciaKm(PUNTO_PARTIDA.lat, PUNTO_PARTIDA.lon, lat, lon),
     };

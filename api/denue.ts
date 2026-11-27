@@ -13,6 +13,7 @@ import {
   clasificarGiro, esEstablecimientoGrande, normalizarTexto,
   indicadoresVacios, IndicadoresZona,
 } from '../src/utils/nse.js';
+import { segmentoDeClase } from '../src/utils/segmentos.js';
 
 const DENUE_BUSCAR = 'https://www.inegi.org.mx/app/api/denue/v1/consulta/Buscar';
 const DENUE = `${DENUE_BUSCAR}/todos`;
@@ -152,7 +153,7 @@ export default async function handler(req: any, res: any) {
 
   const indicadores = indicadoresVacios();
   const categorias: Record<string, [number, number]> = {};
-  const colonias: Record<string, { ind: IndicadoresZona; lat: number; lon: number; cp: string }> = {};
+  const colonias: Record<string, { ind: IndicadoresZona; lat: number; lon: number; cp: string; seg: Record<string, number> }> = {};
   const puntos: [number, number, string][] = [];
   const densidad: Record<string, [number, number, number]> = {}; // "i,j" → [total, alto, bajo]
   const candidatos: { s: number; n: any }[] = [];
@@ -185,7 +186,9 @@ export default async function handler(req: any, res: any) {
     if (grande) cat[1]++;
 
     const nomCol = String(x.Colonia || '').trim().toUpperCase() || 'SIN COLONIA';
-    const col = colonias[nomCol] || (colonias[nomCol] = { ind: indicadoresVacios(), lat: 0, lon: 0, cp: String(x.CP || '').trim() });
+    const col = colonias[nomCol] || (colonias[nomCol] = { ind: indicadoresVacios(), lat: 0, lon: 0, cp: String(x.CP || '').trim(), seg: {} });
+    const sg = segmentoDeClase(normalizarTexto(clase));
+    if (sg) col.seg[sg] = (col.seg[sg] || 0) + 1;
     sumar(col.ind, giro, grande, web);
     col.lat += la; col.lon += lo;
 
