@@ -1,0 +1,3179 @@
+{
+  "rango": {
+    "desde": "2026-08-30",
+    "hasta": "2026-11-27"
+  },
+  "propiedad": "G-XRDWZPQ4WT",
+  "avisos": [
+    "Datos de edad (userAgeBracket) ocultos por umbrales de privacidad o Google Signals desactivado; se asignaron a \"desconocido\".",
+    "Datos de género (userGender) ocultos por umbrales de privacidad o Google Signals desactivado; se asignaron a \"desconocido\".",
+    "car_name y brand_name registran datos a partir del 2026-09-02; fechas previas usan fallback por campaña UTM / página.",
+    "La zona horaria configurada en GA4 es America/Tijuana; \"por_hora\" refleja esa zona horaria."
+  ],
+  "totales": {
+    "usuarios": 172,
+    "sesiones": 376,
+    "vistas_modelo": 170,
+    "clics_whatsapp": 11
+  },
+  "modelos": [
+    {
+      "modelo": "Stellantis Demos (página general)",
+      "marca": "stellantis",
+      "vistas": 0,
+      "clics_whatsapp": 6,
+      "usuarios": 5,
+      "tiempo_interaccion_seg": 52,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 6
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 6
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 2,
+        "14": 0,
+        "15": 1,
+        "16": 1,
+        "17": 1,
+        "18": 0,
+        "19": 0,
+        "20": 1,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 3,
+        "mar": 2,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 1
+      },
+      "por_dispositivo": {
+        "mobile": 6,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 5,
+        "Estado de México": 1,
+        "otros": 0
+      },
+      "por_ciudad": {
+        "Ciudad de México": 5,
+        "Ixtapaluca": 1
+      },
+      "por_canal": {
+        "whatsapp": 2,
+        "sms": 0,
+        "email": 0,
+        "directo": 4,
+        "otros": 0
+      },
+      "por_campania": {
+        "lead_demos": 2
+      },
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad_vistas": {},
+      "por_canal_vistas": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania_vistas": {}
+    },
+    {
+      "modelo": "RAM 4000",
+      "marca": "ram",
+      "vistas": 20,
+      "clics_whatsapp": 2,
+      "usuarios": 11,
+      "tiempo_interaccion_seg": 97,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 2
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 2
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 1,
+        "18": 1,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 1,
+        "sab": 0,
+        "dom": 1
+      },
+      "por_dispositivo": {
+        "mobile": 2,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 1,
+        "Estado de México": 0,
+        "otros": 1
+      },
+      "por_ciudad": {
+        "Ciudad de México": 1,
+        "Cancun": 1
+      },
+      "por_canal": {
+        "whatsapp": 2,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {
+        "lead_ram_4000": 2
+      },
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 20
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 20
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 1,
+        "6": 0,
+        "7": 2,
+        "8": 1,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 5,
+        "15": 0,
+        "16": 1,
+        "17": 1,
+        "18": 6,
+        "19": 0,
+        "20": 2,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 5,
+        "mar": 1,
+        "mie": 0,
+        "jue": 1,
+        "vie": 6,
+        "sab": 2,
+        "dom": 5
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 18,
+        "desktop": 2,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 13,
+        "Estado de México": 1,
+        "otros": 6
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 13,
+        "Culiacan": 4,
+        "Cancun": 2,
+        "Tultepec": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 10,
+        "sms": 1,
+        "email": 0,
+        "directo": 0,
+        "otros": 9
+      },
+      "por_campania_vistas": {
+        "lead_ram_4000": 9,
+        "lead_ram_1200_chasis": 1,
+        "ESTADO_WHATSAPP": 1
+      }
+    },
+    {
+      "modelo": "RAM 700",
+      "marca": "ram",
+      "vistas": 10,
+      "clics_whatsapp": 1,
+      "usuarios": 8,
+      "tiempo_interaccion_seg": 65,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 1
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 1
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 1,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 1
+      },
+      "por_dispositivo": {
+        "mobile": 1,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 1,
+        "otros": 0
+      },
+      "por_ciudad": {
+        "Chimalhuacan": 1
+      },
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 1,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {
+        "lead_ram_700": 1
+      },
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 10
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 10
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 3,
+        "15": 1,
+        "16": 1,
+        "17": 0,
+        "18": 2,
+        "19": 0,
+        "20": 0,
+        "21": 1,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 2,
+        "mar": 4,
+        "mie": 0,
+        "jue": 2,
+        "vie": 0,
+        "sab": 0,
+        "dom": 2
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 8,
+        "desktop": 2,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 4,
+        "Estado de México": 5,
+        "otros": 1
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 4,
+        "Ecatepec de Morelos": 4,
+        "Anadarko": 1,
+        "Chimalhuacan": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 5,
+        "sms": 1,
+        "email": 0,
+        "directo": 0,
+        "otros": 4
+      },
+      "por_campania_vistas": {
+        "lead_ram_700": 4,
+        "MKT_EMPRESAS_CALLE": 2,
+        "lead_jt_rubicon": 1
+      }
+    },
+    {
+      "modelo": "Jeep Renegade",
+      "marca": "jeep",
+      "vistas": 7,
+      "clics_whatsapp": 1,
+      "usuarios": 5,
+      "tiempo_interaccion_seg": 34,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 1
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 1
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 1,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 1,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 1,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {
+        "Ciudad de México": 1
+      },
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 1,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 7
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 7
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 2,
+        "12": 0,
+        "13": 2,
+        "14": 0,
+        "15": 2,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 1,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 2,
+        "mie": 3,
+        "jue": 1,
+        "vie": 0,
+        "sab": 0,
+        "dom": 1
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 3,
+        "desktop": 4,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 4,
+        "Estado de México": 0,
+        "otros": 3
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 4,
+        "Puebla": 2,
+        "El Salto": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 3,
+        "sms": 0,
+        "email": 0,
+        "directo": 4,
+        "otros": 0
+      },
+      "por_campania_vistas": {
+        "lead_renegade": 2,
+        "WHATS_SEND_CARTERA": 1
+      }
+    },
+    {
+      "modelo": "RAM 700 Laramie",
+      "marca": "ram",
+      "vistas": 7,
+      "clics_whatsapp": 1,
+      "usuarios": 7,
+      "tiempo_interaccion_seg": 142,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 1
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 1
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 1,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 1,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 1
+      },
+      "por_ciudad": {
+        "Culiacan": 1
+      },
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 1
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 7
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 7
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 1,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 2,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 2,
+        "19": 0,
+        "20": 2,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 4,
+        "mie": 3,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 5,
+        "desktop": 2,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 3,
+        "Estado de México": 4,
+        "otros": 0
+      },
+      "por_ciudad_vistas": {
+        "Ecatepec de Morelos": 4,
+        "Ciudad de México": 3
+      },
+      "por_canal_vistas": {
+        "whatsapp": 1,
+        "sms": 0,
+        "email": 2,
+        "directo": 0,
+        "otros": 4
+      },
+      "por_campania_vistas": {
+        "EMAIL_LIST_BD_STELLANTIS": 2,
+        "MKT_EMPRESAS_CALLE": 2,
+        "WHATS_SEND_CARTERA": 1
+      }
+    },
+    {
+      "modelo": "ATTITUDE SXT",
+      "marca": "dodge",
+      "vistas": 26,
+      "clics_whatsapp": 0,
+      "usuarios": 6,
+      "tiempo_interaccion_seg": 158,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 26
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 26
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 3,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 2,
+        "12": 1,
+        "13": 0,
+        "14": 6,
+        "15": 2,
+        "16": 0,
+        "17": 0,
+        "18": 12,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 10,
+        "jue": 13,
+        "vie": 0,
+        "sab": 1,
+        "dom": 2
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 14,
+        "desktop": 12,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 25,
+        "Estado de México": 0,
+        "otros": 1
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 25,
+        "Acayucan": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 1,
+        "sms": 2,
+        "email": 1,
+        "directo": 13,
+        "otros": 9
+      },
+      "por_campania_vistas": {
+        "MKT_EMPRESAS_CALLE": 8,
+        "lead_attitude": 3,
+        "EMAIL_LIST_BD_CTES_CARTERA": 1
+      }
+    },
+    {
+      "modelo": "Leapmotor B10",
+      "marca": "leapmotor",
+      "vistas": 23,
+      "clics_whatsapp": 0,
+      "usuarios": 13,
+      "tiempo_interaccion_seg": 101,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 23
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 23
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 2,
+        "8": 8,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 2,
+        "15": 8,
+        "16": 1,
+        "17": 0,
+        "18": 1,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 1,
+        "mar": 4,
+        "mie": 0,
+        "jue": 15,
+        "vie": 0,
+        "sab": 2,
+        "dom": 1
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 14,
+        "desktop": 9,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 18,
+        "Estado de México": 3,
+        "otros": 2
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 18,
+        "Chalco de Diaz Covarrubias": 1,
+        "Ecatepec de Morelos": 2,
+        "Erie": 1,
+        "Dublin": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 0,
+        "sms": 1,
+        "email": 7,
+        "directo": 3,
+        "otros": 12
+      },
+      "por_campania_vistas": {
+        "EMAIL_LIST_BD_CTES_CARTERA_VIEJA_NO_VENDIDOS": 6,
+        "EMAIL_LIST_BD_STELLANTIS": 1,
+        "MKT_EMPRESAS_CALLE": 1
+      }
+    },
+    {
+      "modelo": "RAM 1500",
+      "marca": "ram",
+      "vistas": 17,
+      "clics_whatsapp": 0,
+      "usuarios": 7,
+      "tiempo_interaccion_seg": 426,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 17
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 17
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 1,
+        "12": 0,
+        "13": 9,
+        "14": 2,
+        "15": 1,
+        "16": 1,
+        "17": 3,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 17,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 17,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 9,
+        "Estado de México": 1,
+        "otros": 7
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 9,
+        "Culiacan": 4,
+        "Tlaquepaque": 3,
+        "Ixtapaluca": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 12,
+        "otros": 5
+      },
+      "por_campania_vistas": {}
+    },
+    {
+      "modelo": "Peugeot 2008",
+      "marca": "peugeot",
+      "vistas": 11,
+      "clics_whatsapp": 0,
+      "usuarios": 1,
+      "tiempo_interaccion_seg": 54,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 11
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 11
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 11,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 11,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 11,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 11,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 11
+      },
+      "por_canal_vistas": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 11,
+        "otros": 0
+      },
+      "por_campania_vistas": {}
+    },
+    {
+      "modelo": "Jeep Compass",
+      "marca": "jeep",
+      "vistas": 9,
+      "clics_whatsapp": 0,
+      "usuarios": 4,
+      "tiempo_interaccion_seg": 1,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 9
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 9
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 1,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 3,
+        "14": 0,
+        "15": 0,
+        "16": 3,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 2,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 1,
+        "mar": 0,
+        "mie": 3,
+        "jue": 5,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 6,
+        "desktop": 3,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 8,
+        "Estado de México": 0,
+        "otros": 1
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 8,
+        "El Salto": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 6,
+        "sms": 0,
+        "email": 0,
+        "directo": 3,
+        "otros": 0
+      },
+      "por_campania_vistas": {
+        "lead_compass": 6
+      }
+    },
+    {
+      "modelo": "RAM 1200 Crew Cab",
+      "marca": "ram",
+      "vistas": 8,
+      "clics_whatsapp": 0,
+      "usuarios": 6,
+      "tiempo_interaccion_seg": 52,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 8
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 8
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 3,
+        "14": 1,
+        "15": 1,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 1,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 1,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 6,
+        "sab": 0,
+        "dom": 1
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 3,
+        "desktop": 5,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 8,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 8
+      },
+      "por_canal_vistas": {
+        "whatsapp": 2,
+        "sms": 2,
+        "email": 1,
+        "directo": 0,
+        "otros": 3
+      },
+      "por_campania_vistas": {
+        "lead_ram_700": 1,
+        "lead_demos": 1,
+        "EMAIL_LIST_BD_CTES_CARTERA": 1,
+        "lead_ram_1200": 1,
+        "lead_ram_1200_chasis": 1
+      }
+    },
+    {
+      "modelo": "Jeep Wrangler",
+      "marca": "jeep",
+      "vistas": 7,
+      "clics_whatsapp": 0,
+      "usuarios": 3,
+      "tiempo_interaccion_seg": 12,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 7
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 7
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 1,
+        "9": 0,
+        "10": 0,
+        "11": 1,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 3,
+        "18": 1,
+        "19": 1,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 4,
+        "mie": 0,
+        "jue": 1,
+        "vie": 1,
+        "sab": 1,
+        "dom": 0
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 6,
+        "desktop": 1,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 6,
+        "Estado de México": 1,
+        "otros": 0
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 6,
+        "Naucalpan de Juarez": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 1,
+        "directo": 3,
+        "otros": 3
+      },
+      "por_campania_vistas": {
+        "EMAIL_LIST_BD_STELLANTIS": 1
+      }
+    },
+    {
+      "modelo": "Peugeot Partner Maxi",
+      "marca": "peugeot",
+      "vistas": 7,
+      "clics_whatsapp": 0,
+      "usuarios": 5,
+      "tiempo_interaccion_seg": 90,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 7
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 7
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 1,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 2,
+        "14": 0,
+        "15": 2,
+        "16": 0,
+        "17": 2,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 1,
+        "mar": 0,
+        "mie": 1,
+        "jue": 2,
+        "vie": 0,
+        "sab": 0,
+        "dom": 3
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 7,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 1,
+        "Estado de México": 1,
+        "otros": 5
+      },
+      "por_ciudad_vistas": {
+        "Acayucan": 2,
+        "Garcia": 1,
+        "desconocido": 1,
+        "Lincoln": 1,
+        "Ciudad de México": 1,
+        "Tlalnepantla de Baz": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 3,
+        "sms": 1,
+        "email": 2,
+        "directo": 1,
+        "otros": 0
+      },
+      "por_campania_vistas": {
+        "EMAIL_LIST_BD_CTES_CARTERA": 2,
+        "lead_partner_maxi": 2
+      }
+    },
+    {
+      "modelo": "Fiat Fastback",
+      "marca": "fiat",
+      "vistas": 5,
+      "clics_whatsapp": 0,
+      "usuarios": 4,
+      "tiempo_interaccion_seg": 0,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 5
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 5
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 1,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 1,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 2,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 2,
+        "vie": 1,
+        "sab": 0,
+        "dom": 2
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 4,
+        "desktop": 1,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 3,
+        "Estado de México": 2,
+        "otros": 0
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 3,
+        "Nezahualcóyotl": 2
+      },
+      "por_canal_vistas": {
+        "whatsapp": 4,
+        "sms": 1,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania_vistas": {
+        "lead_fastback": 5
+      }
+    },
+    {
+      "modelo": "Fiat Abarth",
+      "marca": "fiat",
+      "vistas": 3,
+      "clics_whatsapp": 0,
+      "usuarios": 2,
+      "tiempo_interaccion_seg": 101,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 3
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 3
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 3,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 3,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 3,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 3
+      },
+      "por_ciudad_vistas": {
+        "El Salto": 2,
+        "Acayucan": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 2,
+        "sms": 0,
+        "email": 1,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania_vistas": {
+        "WHATS_SEND_CARTERA": 2,
+        "EMAIL_LIST_BD_CTES_CARTERA": 1
+      }
+    },
+    {
+      "modelo": "RAM 1200 Chasis",
+      "marca": "ram",
+      "vistas": 3,
+      "clics_whatsapp": 0,
+      "usuarios": 2,
+      "tiempo_interaccion_seg": 0,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 3
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 3
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 2,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 2,
+        "sab": 0,
+        "dom": 1
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 1,
+        "desktop": 2,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 2,
+        "Estado de México": 0,
+        "otros": 1
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 2,
+        "Los Angeles": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 0,
+        "sms": 3,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania_vistas": {
+        "lead_ram_1200_chasis": 2
+      }
+    },
+    {
+      "modelo": "Dodge Charger",
+      "marca": "dodge",
+      "vistas": 2,
+      "clics_whatsapp": 0,
+      "usuarios": 2,
+      "tiempo_interaccion_seg": 0,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 2
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 2
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 2,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 2
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 2,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 2
+      },
+      "por_ciudad_vistas": {
+        "Austin": 1,
+        "San Francisco": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 0,
+        "sms": 2,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania_vistas": {}
+    },
+    {
+      "modelo": "Jeep JT",
+      "marca": "jeep",
+      "vistas": 2,
+      "clics_whatsapp": 0,
+      "usuarios": 2,
+      "tiempo_interaccion_seg": 0,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 2
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 2
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 1,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 1,
+        "vie": 0,
+        "sab": 0,
+        "dom": 1
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 1,
+        "desktop": 1,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 1,
+        "Estado de México": 0,
+        "otros": 1
+      },
+      "por_ciudad_vistas": {
+        "Chennai": 1,
+        "Ciudad de México": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 1,
+        "sms": 1,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania_vistas": {
+        "lead_jt_rubicon": 1
+      }
+    },
+    {
+      "modelo": "Fiat Pulse",
+      "marca": "fiat",
+      "vistas": 1,
+      "clics_whatsapp": 0,
+      "usuarios": 1,
+      "tiempo_interaccion_seg": 2,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 1
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 1
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 1
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 1,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 1
+      },
+      "por_ciudad_vistas": {
+        "New York": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 0,
+        "sms": 1,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania_vistas": {}
+    },
+    {
+      "modelo": "Jeep Grand Cherokee",
+      "marca": "jeep",
+      "vistas": 1,
+      "clics_whatsapp": 0,
+      "usuarios": 1,
+      "tiempo_interaccion_seg": 0,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 1
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 1
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 1,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 1
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 1,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 1
+      },
+      "por_ciudad_vistas": {
+        "Lincoln": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 1,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania_vistas": {}
+    },
+    {
+      "modelo": "Peugeot 3008",
+      "marca": "peugeot",
+      "vistas": 1,
+      "clics_whatsapp": 0,
+      "usuarios": 1,
+      "tiempo_interaccion_seg": 0,
+      "por_edad": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 0
+      },
+      "por_genero": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 0
+      },
+      "por_hora": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 0,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 0,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo": {
+        "mobile": 0,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region": {
+        "Ciudad de México": 0,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad": {},
+      "por_canal": {
+        "whatsapp": 0,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania": {},
+      "por_edad_vistas": {
+        "18-24": 0,
+        "25-34": 0,
+        "35-44": 0,
+        "45-54": 0,
+        "55-64": 0,
+        "65+": 0,
+        "desconocido": 1
+      },
+      "por_genero_vistas": {
+        "male": 0,
+        "female": 0,
+        "desconocido": 1
+      },
+      "por_hora_vistas": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 0,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "10": 0,
+        "11": 0,
+        "12": 0,
+        "13": 0,
+        "14": 0,
+        "15": 0,
+        "16": 0,
+        "17": 0,
+        "18": 0,
+        "19": 0,
+        "20": 0,
+        "21": 1,
+        "22": 0,
+        "23": 0
+      },
+      "por_dia_vistas": {
+        "lun": 0,
+        "mar": 0,
+        "mie": 0,
+        "jue": 1,
+        "vie": 0,
+        "sab": 0,
+        "dom": 0
+      },
+      "por_dispositivo_vistas": {
+        "mobile": 1,
+        "desktop": 0,
+        "tablet": 0
+      },
+      "por_region_vistas": {
+        "Ciudad de México": 1,
+        "Estado de México": 0,
+        "otros": 0
+      },
+      "por_ciudad_vistas": {
+        "Ciudad de México": 1
+      },
+      "por_canal_vistas": {
+        "whatsapp": 1,
+        "sms": 0,
+        "email": 0,
+        "directo": 0,
+        "otros": 0
+      },
+      "por_campania_vistas": {
+        "lead_compass": 1
+      }
+    }
+  ]
+}

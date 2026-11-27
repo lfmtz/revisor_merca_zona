@@ -1,6 +1,7 @@
 {
   "functions": {
     "api/denue.ts": { "maxDuration": 60, "memory": 1024 },
-    "api/apify.ts": { "maxDuration": 30 }
+    "api/apify.ts": { "maxDuration": 30 },
+    "api/ga.ts": { "maxDuration": 30 }
   }
 }
