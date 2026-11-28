@@ -48,6 +48,7 @@ import { SaldoApifyBadge } from './components/SaldoApifyBadge';
 import { MapaZona } from './components/MapaZona';
 import { PanelBuyer } from './components/PanelBuyer';
 import { PlanMeta } from './components/PlanMeta';
+import { cerrarSesion } from './services/apiCliente';
 import { ZonasCalientes } from './components/ZonasCalientes';
 import { 
   MapPin, 
@@ -66,7 +67,7 @@ import {
   Clock, 
   Store, 
   Tag, 
-  ShieldCheck, 
+  ShieldCheck, LogOut, 
   Code2, 
   Terminal, 
   TrendingUp, 
@@ -352,6 +353,15 @@ export default function App() {
             title="Marco Legal LFPDPPP México"
           >
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          </button>
+          <button
+            id="btn-cerrar-sesion"
+            onClick={() => { if (window.confirm('¿Cerrar sesión en este dispositivo?')) cerrarSesion(); }}
+            title="Cerrar sesión"
+            className="px-3 py-1.5 rounded-lg bg-[#1C1433] hover:bg-red-950/60 border border-purple-800 hover:border-red-700 text-xs font-bold text-[#E9D5FF] hover:text-red-200 flex items-center gap-1.5 transition"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Salir</span>
           </button>
         </div>
       </header>

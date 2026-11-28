@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Lock, Loader2 } from 'lucide-react';
-import { llamarApi, guardarClave, borrarClave, obtenerClaveGuardada } from '../services/apiCliente';
+import { llamarApi, guardarClave, borrarClave, obtenerClaveGuardada, HORAS_SESION, DIAS_RECORDAR } from '../services/apiCliente';
 
 // Pide la clave de acceso (APP_ACCESS_KEY de Vercel) antes de mostrar la app.
 export const AccesoGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -8,6 +8,8 @@ export const AccesoGate: React.FC<{ children: React.ReactNode }> = ({ children }
   const [clave, setClave] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [recordar, setRecordar] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
 
   const verificar = async () => {
     if (!obtenerClaveGuardada()) { setEstado('bloqueado'); return false; }
@@ -25,8 +27,18 @@ export const AccesoGate: React.FC<{ children: React.ReactNode }> = ({ children }
   useEffect(() => {
     verificar();
     const relock = () => { setEstado('bloqueado'); setError('Tu clave ya no es válida. Escríbela de nuevo.'); };
+    const salir = () => { setEstado('bloqueado'); setClave(''); setError(null); setAviso('Sesión cerrada.'); };
+    // Si la sesión vence con la app abierta, se bloquea sola.
+    const reloj = window.setInterval(() => {
+      if (!obtenerClaveGuardada()) setEstado(e => { if (e === 'abierto') setAviso('Tu sesión venció. Vuelve a entrar.'); return e === 'abierto' ? 'bloqueado' : e; });
+    }, 60000);
     window.addEventListener('leadscrapper:clave-invalida', relock);
-    return () => window.removeEventListener('leadscrapper:clave-invalida', relock);
+    window.addEventListener('leadscrapper:salir', salir);
+    return () => {
+      window.clearInterval(reloj);
+      window.removeEventListener('leadscrapper:clave-invalida', relock);
+      window.removeEventListener('leadscrapper:salir', salir);
+    };
   }, []);
 
   const entrar = async (e: React.FormEvent) => {
@@ -34,7 +46,8 @@ export const AccesoGate: React.FC<{ children: React.ReactNode }> = ({ children }
     if (!clave.trim()) return;
     setEnviando(true);
     setError(null);
-    guardarClave(clave);
+    setAviso(null);
+    guardarClave(clave, recordar);
     const ok = await verificar();
     if (!ok) {
       borrarClave();
@@ -69,6 +82,11 @@ export const AccesoGate: React.FC<{ children: React.ReactNode }> = ({ children }
             placeholder="Clave de acceso"
             className="w-full bg-[#0A0713] border border-[#6B21A8]/60 focus:border-[#C084FC] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-500 focus:outline-none"
           />
+          <label className="flex items-center gap-2 text-xs text-[#E9D5FF]/80 cursor-pointer select-none">
+            <input id="chk-recordar" type="checkbox" checked={recordar} onChange={e => setRecordar(e.target.checked)} className="accent-purple-500" />
+            Mantener sesión {DIAS_RECORDAR} días en este dispositivo
+          </label>
+          {aviso && !error && <p className="text-xs text-emerald-300">{aviso}</p>}
           {error && <p className="text-xs text-red-300">{error}</p>}
           <button
             type="submit"
@@ -77,7 +95,7 @@ export const AccesoGate: React.FC<{ children: React.ReactNode }> = ({ children }
           >
             {enviando && <Loader2 className="w-4 h-4 animate-spin" />} Entrar
           </button>
-          <p className="text-[10px] text-gray-500">La clave se recuerda en este navegador.</p>
+          <p className="text-[10px] text-gray-500">Sin marcar, la sesión se cierra sola a las {HORAS_SESION} horas. Usa "Salir" en una computadora que no sea tuya.</p>
         </form>
       )}
     </div>

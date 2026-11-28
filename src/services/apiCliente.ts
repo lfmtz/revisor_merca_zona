@@ -2,16 +2,35 @@
 
 export const ACCESS_KEY_STORAGE = 'leadscrapper_access_key';
 
+const VENCE_STORAGE = 'leadscrapper_sesion_vence';
+export const HORAS_SESION = 8;          // sesión normal
+export const DIAS_RECORDAR = 30;        // "mantener sesión en este dispositivo"
+
 export function obtenerClaveGuardada(): string {
-  try { return localStorage.getItem(ACCESS_KEY_STORAGE) || ''; } catch { return ''; }
+  try {
+    const clave = localStorage.getItem(ACCESS_KEY_STORAGE) || '';
+    const vence = Number(localStorage.getItem(VENCE_STORAGE) || 0);
+    if (clave && (!vence || Date.now() > vence)) { borrarClave(); return ''; }
+    return clave;
+  } catch { return ''; }
 }
 
-export function guardarClave(clave: string) {
-  try { localStorage.setItem(ACCESS_KEY_STORAGE, clave.trim()); } catch { /* sin localStorage */ }
+export function guardarClave(clave: string, recordar = false) {
+  try {
+    const dur = recordar ? DIAS_RECORDAR * 86400000 : HORAS_SESION * 3600000;
+    localStorage.setItem(ACCESS_KEY_STORAGE, clave.trim());
+    localStorage.setItem(VENCE_STORAGE, String(Date.now() + dur));
+  } catch { /* sin localStorage */ }
 }
 
 export function borrarClave() {
-  try { localStorage.removeItem(ACCESS_KEY_STORAGE); } catch { /* */ }
+  try { localStorage.removeItem(ACCESS_KEY_STORAGE); localStorage.removeItem(VENCE_STORAGE); } catch { /* */ }
+}
+
+/** Cierra la sesión en este navegador y regresa a la pantalla de acceso. */
+export function cerrarSesion() {
+  borrarClave();
+  window.dispatchEvent(new Event('leadscrapper:salir'));
 }
 
 export class ErrorApi extends Error {
