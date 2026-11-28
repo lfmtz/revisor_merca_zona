@@ -84,7 +84,6 @@ import {
 
 export default function App() {
   // Top-level View: 'cuadricula' (Escaneo de Cuadrículas Maps) | 'inteligencia' (DENUE INEGI B2B)
-  const [activeMainTab, setActiveMainTab] = useState<'cuadricula' | 'inteligencia'>('cuadricula');
 
   // Linear Flow Step: 'config' (Pantalla 1) | 'scanning' (Pantalla 2) | 'results' (Pantalla 3)
   const [currentScreen, setCurrentScreen] = useState<'config' | 'scanning' | 'results'>('config');
@@ -334,34 +333,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* View Switcher: Cuadrículas vs Inteligencia B2B */}
-        <div className="hidden sm:flex items-center gap-1 bg-[#0A0713] p-1 rounded-xl border border-purple-900/60 shadow-inner">
-          <button
-            id="nav-btn-cuadricula"
-            onClick={() => setActiveMainTab('cuadricula')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-              activeMainTab === 'cuadricula'
-                ? 'bg-gradient-to-r from-[#6B21A8] to-[#9333EA] text-white shadow'
-                : 'text-[#E9D5FF]/70 hover:text-white'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Cuadrículas Maps</span>
-          </button>
-          <button
-            id="nav-btn-inteligencia"
-            onClick={() => setActiveMainTab('inteligencia')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
-              activeMainTab === 'inteligencia'
-                ? 'bg-gradient-to-r from-[#6B21A8] to-[#9333EA] text-white shadow'
-                : 'text-[#E9D5FF]/70 hover:text-white'
-            }`}
-          >
-            <Compass className="w-3.5 h-3.5 text-amber-400" />
-            <span>Inteligencia DENUE</span>
-          </button>
-        </div>
-
         {/* Action Controls */}
         <div className="flex items-center gap-2.5">
           <SaldoApifyBadge />
@@ -388,69 +359,12 @@ export default function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 md:p-8 space-y-6">
         
-        {/* DIRECT INTELLIGENCE VIEW (B2B & DENUE INEGI) - Works even before running any scan */}
-        {activeMainTab === 'inteligencia' ? (
-          <div className="space-y-4 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#130E22] border border-purple-900/40 p-4 rounded-xl">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-purple-400 font-semibold">Territorio Seleccionado:</span>
-                <span className="px-2.5 py-1 rounded-lg bg-purple-950 text-white font-bold border border-purple-800">
-                  {municipio ? `${municipio}, ` : ''}{estado}
-                </span>
-                <span className="text-gray-400 font-mono text-[11px] hidden md:inline">
-                  (Lat: {geoCenter.lat.toFixed(4)}, Lon: {geoCenter.lon.toFixed(4)})
-                </span>
-              </div>
-              <button
-                onClick={() => setActiveMainTab('cuadricula')}
-                className="px-3.5 py-1.5 rounded-xl bg-[#1C1433] hover:bg-[#251A45] border border-purple-800 text-xs font-bold text-[#E9D5FF] flex items-center gap-1.5 transition self-start sm:self-auto"
-              >
-                <RotateCcw className="w-3.5 h-3.5 text-purple-400" />
-                <span>Volver a Escaneo de Cuadrícula</span>
-              </button>
-            </div>
-
-            <MarketIntelligenceSection
-              estado={estado}
-              municipio={municipio}
-              lat={geoCenter.lat}
-              lon={geoCenter.lon}
-            />
-          </div>
-        ) : (
-          <>
+        <>
             {/* ═════════════════════════════════════════════════════════════════════ */}
             {/* PANTALLA 1: CONFIGURACIÓN DE ZONA Y MODO (FLUJO LINEAL)             */}
             {/* ═════════════════════════════════════════════════════════════════════ */}
             {currentScreen === 'config' && (
               <div id="screen-config" className="space-y-6 animate-fadeIn">
-                {/* Direct Intelligence Shortcut Card */}
-                <div className="bg-gradient-to-r from-[#1B1133] via-[#150D28] to-[#10091E] border border-[#9333EA]/60 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-950/90 border border-purple-700 flex items-center justify-center shrink-0 shadow">
-                      <Compass className="w-5 h-5 text-amber-400" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-                        <span>¿Deseas consultar inteligencia B2B sin esperar al escaneo?</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-mono font-bold">
-                          DENUE INEGI
-                        </span>
-                      </h4>
-                      <p className="text-xs text-[#E9D5FF]/70 mt-0.5">
-                        Analiza hospitales, clínicas, empresas de transporte y flotillas industriales con el Score de Oportunidad para {municipio ? `${municipio}, ` : ''}{estado}.
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    id="btn-shortcut-intel"
-                    onClick={() => setActiveMainTab('inteligencia')}
-                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#6B21A8] to-[#9333EA] hover:from-[#9333EA] hover:to-[#A855F7] text-white text-xs font-bold flex items-center gap-2 whitespace-nowrap shadow-lg shadow-purple-950/50 transition self-stretch sm:self-auto justify-center"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-                    <span>Ver Reporte B2B Ahora</span>
-                  </button>
-                </div>
             {/* Hero Header */}
             <div className="bg-gradient-to-br from-[#1C1433] via-[#150F26] to-[#0E0A1B] border border-[#6B21A8]/50 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
               <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#9333EA]/10 rounded-full blur-3xl pointer-events-none" />
@@ -1625,8 +1539,7 @@ export default function App() {
           </div>
         )}
 
-          </>
-        )}
+        </>
 
       </main>
 
